@@ -10,6 +10,9 @@ import {
   FormCreatedEvent,
   FormUpdatedEvent,
   SyncBatchReceivedEvent,
+  DomainEvent,
+  PinDeletedEvent,
+  FormDeletedEvent,
 } from '../types/events';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -35,6 +38,19 @@ export class SyncService {
         userId: payload.userId as string,
         deviceId: request.deviceId,
       });
+
+      // Create domain event for outbox (for WebSocket notifications)
+      try {
+        const eventType = this.getDomainEventType(request.operation, request.entityType);
+        const domainEvent = await this.createDomainEvent(eventType, result, request);
+        await outboxRepository.insertEvent(domainEvent);
+        logger.info('Inserted domain event to outbox', {
+          eventId: domainEvent.eventId,
+          type: domainEvent.type,
+        });
+      } catch (error) {
+        logger.error('Failed to create or insert domain event', { error });
+      }
 
       // Publish audit log
       await eventService.publishAuditLog({
@@ -166,6 +182,121 @@ export class SyncService {
       default:
         return 'sync.item.updated';
     }
+  }
+
+  /**
+   * Get domain event type from operation and entity type
+   */
+  private getDomainEventType(operation: OperationType, entityType: 'pin' | 'form'): string {
+    const prefix = entityType === 'pin' ? 'Pin' : 'Form';
+    switch (operation) {
+      case 'create':
+        return `${prefix}Created`;
+      case 'update':
+        return `${prefix}Updated`;
+      case 'delete':
+        return `${prefix}Deleted`;
+      default:
+        return `${prefix}Updated`;
+    }
+  }
+
+  /**
+   * Create domain event for outbox
+   */
+  private async createDomainEvent(
+    eventType: string,
+    result: PinData | FormData | { id: string; deleted: boolean },
+    request: SyncItemRequest
+  ): Promise<DomainEvent> {
+    const payload = request.payload as Record<string, unknown>;
+    const userId = payload.userId as string;
+    const entityId = result.id || (payload.id as string);
+    const nextVersion = await outboxRepository.getNextVersion(entityId);
+
+    const baseEvent = {
+      eventId: uuidv4(),
+      aggregateId: entityId,
+      aggregateType: request.entityType as 'pin' | 'form',
+      type: eventType,
+      version: nextVersion,
+      timestamp: new Date().toISOString(),
+      userId,
+    };
+
+    if (eventType === 'PinCreated') {
+      return {
+        ...baseEvent,
+        type: 'PinCreated',
+        payload: {
+          id: entityId,
+          title: (result as PinData).name || '',
+          description: (result as PinData).description || '',
+          latitude: (result as PinData).lat || 0,
+          longitude: (result as PinData).lng || 0,
+          category: (result as PinData).images || '',
+          createdBy: userId,
+          createdAt: new Date().toISOString(),
+        },
+      } as PinCreatedEvent;
+    } else if (eventType === 'PinUpdated') {
+      return {
+        ...baseEvent,
+        type: 'PinUpdated',
+        payload: {
+          id: entityId,
+          changes: result as unknown as Record<string, unknown>,
+          updatedBy: userId,
+          updatedAt: new Date().toISOString(),
+        },
+      } as PinUpdatedEvent;
+    } else if (eventType === 'PinDeleted') {
+      return {
+        ...baseEvent,
+        type: 'PinDeleted',
+        payload: {
+          id: entityId,
+          deletedBy: userId,
+          deletedAt: new Date().toISOString(),
+        },
+      } as PinDeletedEvent;
+    } else if (eventType === 'FormCreated') {
+      return {
+        ...baseEvent,
+        type: 'FormCreated',
+        payload: {
+          id: entityId,
+          pinId: (result as FormData).pinId || '',
+          formType: (result as FormData).formType || '',
+          data: (result as FormData).data || {},
+          createdBy: userId,
+          createdAt: new Date().toISOString(),
+        },
+      } as FormCreatedEvent;
+    } else if (eventType === 'FormUpdated') {
+      return {
+        ...baseEvent,
+        type: 'FormUpdated',
+        payload: {
+          id: entityId,
+          changes: result as unknown as Record<string, unknown>,
+          updatedBy: userId,
+          updatedAt: new Date().toISOString(),
+        },
+      } as FormUpdatedEvent;
+    } else if (eventType === 'FormDeleted') {
+      return {
+        ...baseEvent,
+        type: 'FormDeleted',
+        payload: {
+          id: entityId,
+          deletedBy: userId,
+          deletedAt: new Date().toISOString(),
+        },
+      } as FormDeletedEvent;
+    }
+
+    throw new Error(`Unknown event type: ${eventType}`);
   }
 
   /**

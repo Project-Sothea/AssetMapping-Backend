@@ -175,6 +175,25 @@ export class OutboxRepository {
 
     return stats || { total: 0, pending: 0, published: 0, failed: 0 };
   }
+
+  /**
+   * Get next version for an aggregate
+   */
+  async getNextVersion(aggregateId: string): Promise<number> {
+    const { data, error } = await supabase
+      .from('outbox')
+      .select('version')
+      .eq('aggregate_id', aggregateId)
+      .order('version', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      logger.error('Failed to get next version', { error, aggregateId });
+      return 1;
+    }
+
+    return (data?.[0]?.version || 0) + 1;
+  }
 }
 
 export const outboxRepository = new OutboxRepository();
