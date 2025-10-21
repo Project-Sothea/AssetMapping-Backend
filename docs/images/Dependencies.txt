@@ -1,0 +1,52 @@
+Kafka + Redis Interaction:
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   API       │    │   Kafka     │    │   Redis     │
+│   Routes    │───►│   Events    │───►│   Cache/    │
+│             │    │             │    │ Idempotency │
+└─────────────┘    └─────────────┘    └─────────────┘
+       ▲                     ▲               │
+       │                     │               ▼
+       └─────────────────────┼───────────────┼─────────────┐
+                             ▼               ▼             │
+                    ┌─────────────────┐    ┌─────────────┐ │
+                    │  Consumers      │    │ Idempotency │ │
+                    │  (Async)        │    │ Service     │ │
+                    └─────────────────┘    └─────────────┘ │
+                                                           │
+                                                           ▼
+                                                    ┌─────────────┐
+                                                    │   Clients   │
+                                                    │ (WebSocket) │
+                                                    └─────────────┘
+
+
+Syncing Flow (Frontend + Backend)
+                ┌─────────────────────┐
+                │      API Layer      │
+                │  (HTTP / GraphQL)   │
+                └─────────┬───────────┘
+                          │
+                ┌─────────▼───────────┐
+                │   Command Handler   │  ← Handles "intent" (create/update)
+                └─────────┬───────────┘
+                          │  (write events)
+                ┌─────────▼───────────┐
+                │     Kafka Topic     │
+                └─────────┬───────────┘
+                          │
+          ┌───────────────┴────────────────┐
+          │                                │
+ ┌────────▼────────┐             ┌─────────▼────────┐
+ │ Projection Svc  │             │ Notification Svc │
+ │ (build read DB) │             │ (send WS/push)   │
+ └────────┬────────┘             └─────────┬────────┘
+          │                                │
+          ▼                                ▼
+     Read Model DB                 WebSocket Gateway
+          │                                │
+          ▼                                ▼
+        Frontend  ←──────────────→  WebSocket (real-time)
+          │
+          ▼
+    Local Offline DB
+

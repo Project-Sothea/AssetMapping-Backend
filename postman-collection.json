@@ -1,0 +1,208 @@
+{
+  "info": {
+    "name": "AssetMapping Backend API",
+    "description": "API collection for testing AssetMapping Backend endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Sync - Create Pin",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idempotencyKey\": \"{{$guid}}\",\n  \"entityType\": \"pin\",\n  \"operation\": \"create\",\n  \"payload\": {\n    \"latitude\": 37.7749,\n    \"longitude\": -122.4194,\n    \"title\": \"Test Pin\",\n    \"description\": \"A test pin from Postman\"\n  },\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"deviceId\": \"postman-test\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/sync/item",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sync", "item"]
+        }
+      }
+    },
+    {
+      "name": "Sync - Create Form",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idempotencyKey\": \"{{$guid}}\",\n  \"entityType\": \"form\",\n  \"operation\": \"create\",\n  \"payload\": {\n    \"formType\": \"inspection\",\n    \"data\": {\n      \"field1\": \"value1\",\n      \"field2\": \"value2\"\n    },\n    \"status\": \"draft\"\n  },\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"deviceId\": \"postman-test\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/sync/item",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sync", "item"]
+        }
+      }
+    },
+    {
+      "name": "Sync - Batch",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    {\n      \"idempotencyKey\": \"{{$guid}}\",\n      \"entityType\": \"pin\",\n      \"operation\": \"create\",\n      \"payload\": {\n        \"latitude\": 37.7749,\n        \"longitude\": -122.4194,\n        \"title\": \"Batch Pin 1\"\n      }\n    },\n    {\n      \"idempotencyKey\": \"{{$guid}}\",\n      \"entityType\": \"pin\",\n      \"operation\": \"create\",\n      \"payload\": {\n        \"latitude\": 37.7849,\n        \"longitude\": -122.4294,\n        \"title\": \"Batch Pin 2\"\n      }\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/sync/batch",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sync", "batch"]
+        }
+      }
+    },
+    {
+      "name": "Images - Get Signed URL",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"filename\": \"test-image.jpg\",\n  \"contentType\": \"image/jpeg\",\n  \"sizeBytes\": 1024000,\n  \"entityType\": \"pin\",\n  \"entityId\": \"test-pin-id\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/images/signed-url",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "signed-url"]
+        }
+      }
+    },
+    {
+      "name": "Images - Process",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"imageUrl\": \"https://your-supabase-url.supabase.co/storage/v1/object/public/images/pin/test-pin-id/image.jpg\",\n  \"entityType\": \"pin\",\n  \"entityId\": \"test-pin-id\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/images/process",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "process"]
+        }
+      }
+    },
+    {
+      "name": "Images - List",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/images/pin/test-pin-id",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images", "pin", "test-pin-id"]
+        }
+      }
+    },
+    {
+      "name": "Images - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"imageUrl\": \"https://your-supabase-url.supabase.co/storage/v1/object/public/images/pin/test-pin-id/image.jpg\",\n  \"entityType\": \"pin\",\n  \"entityId\": \"test-pin-id\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/images",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "images"]
+        }
+      }
+    },
+    {
+      "name": "Pins - Validate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"latitude\": 37.7749,\n  \"longitude\": -122.4194,\n  \"title\": \"Valid Pin\",\n  \"description\": \"This should validate\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/pins/validate",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "pins", "validate"]
+        }
+      }
+    },
+    {
+      "name": "Forms - Validate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"formType\": \"inspection\",\n  \"data\": {\n    \"field1\": \"value1\",\n    \"field2\": \"value2\"\n  },\n  \"status\": \"draft\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/forms/validate",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "forms", "validate"]
+        }
+      }
+    }
+  ]
+}
