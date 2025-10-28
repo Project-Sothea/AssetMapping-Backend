@@ -38,8 +38,13 @@ export class ValidationService {
    */
   sanitizeFormData(data: FormData): FormData {
     // Basic sanitization - can be extended
+    // Sanitize top-level `name` if present, and sanitize nested `data` object
+    const sanitizeString = (s: string) =>
+      s.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
     return {
       ...data,
+      name: typeof data.name === 'string' ? sanitizeString(data.name) : data.name,
       data: this.sanitizeObject(data.data),
     };
   }

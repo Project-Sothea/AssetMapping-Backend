@@ -76,6 +76,7 @@ export const PinDataSchema = z.object({
 export interface FormData {
   id?: string;
   pinId?: string;
+  name?: string;
   formType: string;
   data: Record<string, unknown>;
   status?: 'draft' | 'submitted' | 'synced';
@@ -87,6 +88,7 @@ export interface FormData {
 export const FormDataSchema = z.object({
   id: z.string().optional(),
   pinId: z.string().optional(),
+  name: z.string().optional(),
   formType: z.string().min(1),
   data: z.record(z.any()),
   status: z.enum(['draft', 'submitted', 'synced']).optional(),
