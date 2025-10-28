@@ -118,19 +118,19 @@ See `.env.example` for required environment variables.
 
 ```
 
-src/
-├── server.ts # Express app entry point
-├── config/ # Configuration (Redis, Kafka, Supabase)
-├── controllers/ # Request handlers
-├── services/ # Business logic
-│ ├── sync/ # Sync operations
-│ ├── validation/ # Data validation
-│ ├── images/ # Image processing
-│ └── idempotency/ # Idempotency tracking
-├── middleware/ # Express middleware
-├── routes/ # API routes
-├── types/ # TypeScript types
-└── utils/ # Helper functions
+src/  
+├── server.ts # Express app entry point  
+├── config/ # Configuration (Redis, Kafka, Supabase)  
+├── controllers/ # Request handlers  
+├── services/ # Business logic  
+│ ├── sync/ # Sync operations  
+│ ├── validation/ # Data validation  
+│ ├── images/ # Image processing  
+│ └── idempotency/ # Idempotency tracking  
+├── middleware/ # Express middleware  
+├── routes/ # API routes  
+├── types/ # TypeScript types  
+└── utils/ # Helper functions  
 
 ```
 
