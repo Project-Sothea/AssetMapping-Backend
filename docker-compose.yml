@@ -1,8 +1,6 @@
 # Docker Compose for Local Development
 # Provides Redis and Kafka for local testing
 
-version: '3.8'
-
 services:
   redis:
     image: redis:7-alpine

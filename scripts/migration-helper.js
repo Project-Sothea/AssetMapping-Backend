@@ -2,7 +2,7 @@
 
 /**
  * Migration Helper Script
- * 
+ *
  * This script helps you run the database migration on Supabase.
  * Since Supabase doesn't support executing raw SQL via API,
  * you need to run the migration through the Supabase Dashboard.
@@ -25,9 +25,19 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-// Read migration file
-const migrationPath = path.join(__dirname, '..', 'migrations', '001_add_event_sourcing.sql');
-const migrationSQL = fs.readFileSync(migrationPath, 'utf-8');
+// Read migration files
+const migrations = [
+  { file: '001_add_event_sourcing.sql', description: 'Add event sourcing support' },
+  { file: '002_add_name_to_forms.sql', description: 'Add name column to forms' },
+];
+
+let fullMigrationSQL = '';
+
+migrations.forEach((migration) => {
+  const migrationPath = path.join(__dirname, '..', 'migrations', migration.file);
+  const migrationSQL = fs.readFileSync(migrationPath, 'utf-8');
+  fullMigrationSQL += `-- Migration: ${migration.description}\n${migrationSQL}\n\n`;
+});
 
 console.log('📋 Database Migration Instructions\n');
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
@@ -38,11 +48,13 @@ console.log('1️⃣  Open the Supabase SQL Editor:');
 console.log(`   https://supabase.com/dashboard/project/${projectRef}/sql/new\n`);
 
 console.log('2️⃣  Copy the migration SQL:');
-console.log(`   The migration file is located at:`);
-console.log(`   ${migrationPath}\n`);
+console.log(`   The migration files are located at:`);
+console.log(
+  `   ${migrations.map((m) => path.join(__dirname, '..', 'migrations', m.file)).join('\n   ')}\n`
+);
 
 console.log('3️⃣  Paste and run in SQL Editor:');
-console.log('   - Paste the entire contents of the migration file');
+console.log('   - Paste the entire contents of all migration files');
 console.log('   - Click "Run" button\n');
 
 console.log('4️⃣  Verify the migration:');
@@ -50,6 +62,7 @@ console.log('   You should see:');
 console.log('   ✓ Table "outbox" created');
 console.log('   ✓ Column "version" added to "pins"');
 console.log('   ✓ Column "version" added to "forms"');
+console.log('   ✓ Column "name" added to "forms"');
 console.log('   ✓ Functions created\n');
 
 console.log('5️⃣  Restart your backend server:');
@@ -57,23 +70,31 @@ console.log('   npm run dev\n');
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-console.log('📄 Migration File Preview (first 20 lines):\n');
+console.log('📄 Migration Files Preview (first 20 lines each):\n');
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-const lines = migrationSQL.split('\n').slice(0, 20);
-lines.forEach(line => console.log(line));
-console.log('...');
-console.log(`(${migrationSQL.split('\n').length} lines total)`);
+migrations.forEach((migration) => {
+  const migrationPath = path.join(__dirname, '..', 'migrations', migration.file);
+  const migrationSQL = fs.readFileSync(migrationPath, 'utf-8');
+  console.log(`\n--- ${migration.file} ---`);
+  const lines = migrationSQL.split('\n').slice(0, 10);
+  lines.forEach((line) => console.log(line));
+  console.log(`... (${migrationSQL.split('\n').length} lines total)`);
+});
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
 // Try to copy to clipboard on macOS
 try {
   const { execSync } = require('child_process');
-  execSync(`echo "${migrationSQL.replace(/"/g, '\\"')}" | pbcopy`, { stdio: 'ignore' });
+  execSync(`echo "${fullMigrationSQL.replace(/"/g, '\\"')}" | pbcopy`, { stdio: 'ignore' });
   console.log('✅ Migration SQL copied to clipboard!\n');
   console.log('Just paste it into the Supabase SQL Editor and click Run.\n');
 } catch (e) {
-  console.log('💡 Tip: Copy the migration file contents manually:\n');
-  console.log(`   cat ${migrationPath} | pbcopy\n`);
+  console.log('💡 Tip: Copy the migration files contents manually:\n');
+  migrations.forEach((migration) => {
+    const migrationPath = path.join(__dirname, '..', 'migrations', migration.file);
+    console.log(`   cat ${migrationPath}`);
+  });
+  console.log('');
 }
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
