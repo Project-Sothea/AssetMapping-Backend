@@ -2,6 +2,7 @@ import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import os from 'os';
 import { config } from './config';
 import { connectRedis } from './config/redis';
 import { getKafkaProducer } from './config/kafka';
@@ -17,6 +18,27 @@ import formRoutes from './routes/form.routes';
 import notificationRoutes, { initializeWebSocketServer } from './routes/notification.routes';
 
 const app: Application = express();
+
+// ==================== Helper Functions ====================
+
+/**
+ * Get the local IP address of the machine
+ */
+function getLocalIPAddress(): string {
+  const interfaces = os.networkInterfaces();
+  for (const interfaceName in interfaces) {
+    const addresses = interfaces[interfaceName];
+    if (!addresses) continue;
+
+    for (const address of addresses) {
+      // Skip internal and non-IPv4 addresses
+      if (!address.internal && address.family === 'IPv4') {
+        return address.address;
+      }
+    }
+  }
+  return 'localhost'; // Fallback
+}
 
 // ==================== Middleware ====================
 
@@ -52,11 +74,17 @@ app.use('/api/', limiter);
 
 // Health check
 app.get('/health', (_req: Request, res: Response) => {
+  const serverIp = getLocalIPAddress();
+  const port = config.port;
+  const apiUrl = `http://${serverIp}:${port}`;
+
+  console.log(`🚀 Backend API URL: ${apiUrl}`);
+
   res.json({
-    status: 'ok',
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    environment: config.nodeEnv,
+    apiUrl: apiUrl,
+    version: '1.0.0',
   });
 });
 
@@ -111,9 +139,12 @@ const startServer = async () => {
 
     // Start Express server
     const server = app.listen(config.port, () => {
+      const localIP = getLocalIPAddress();
       logger.info(`✓ Server running on port ${config.port}`);
       logger.info(`✓ Environment: ${config.nodeEnv}`);
       logger.info(`✓ Health check: http://localhost:${config.port}/health`);
+      logger.info(`🔗 Frontend clients connect to: http://${localIP}:${config.port}`);
+      logger.info(`💡 Copy this URL to your mobile app: http://${localIP}:${config.port}`);
     });
 
     // Initialize WebSocket server for real-time notifications
