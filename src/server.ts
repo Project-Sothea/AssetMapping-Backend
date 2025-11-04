@@ -88,23 +88,25 @@ const startServer = async () => {
     logger.info('✓ Kafka producer connected');
 
     // Start Kafka Producer for outbox
-    const { kafkaProducerService } = await import('./services/kafka-producer.service');
+    const { kafkaProducerService } = await import('./services/messaging/kafka-producer.service');
     await kafkaProducerService.connect();
     logger.info('✓ Kafka producer service connected');
 
     // Start Outbox Relayer (polls outbox and publishes to Kafka)
-    const { outboxRelayerService } = await import('./services/outbox-relayer.service');
+    const { outboxRelayerService } = await import('./services/messaging/outbox-relayer.service');
     await outboxRelayerService.start();
     logger.info('✓ Outbox relayer started');
 
     // Start Projection Consumer (applies events to read models)
-    const { projectionConsumerService } = await import('./services/projection-consumer.service');
+    const { projectionConsumerService } = await import(
+      './services/consumers/projection-consumer.service'
+    );
     await projectionConsumerService.start();
     logger.info('✓ Projection consumer started');
 
     // Start Notification Consumer (real-time notifications)
     const { notificationConsumerService } = await import(
-      './services/notification-consumer.service'
+      './services/consumers/notification-consumer.service'
     );
     await notificationConsumerService.start();
     logger.info('✓ Notification consumer started');
@@ -127,14 +129,18 @@ const startServer = async () => {
       server.close(async () => {
         try {
           // Stop event-driven services
-          const { outboxRelayerService } = await import('./services/outbox-relayer.service');
+          const { outboxRelayerService } = await import(
+            './services/messaging/outbox-relayer.service'
+          );
           const { projectionConsumerService } = await import(
-            './services/projection-consumer.service'
+            './services/consumers/projection-consumer.service'
           );
           const { notificationConsumerService } = await import(
-            './services/notification-consumer.service'
+            './services/consumers/notification-consumer.service'
           );
-          const { kafkaProducerService } = await import('./services/kafka-producer.service');
+          const { kafkaProducerService } = await import(
+            './services/messaging/kafka-producer.service'
+          );
 
           await outboxRelayerService.stop();
           logger.info('✓ Outbox relayer stopped');

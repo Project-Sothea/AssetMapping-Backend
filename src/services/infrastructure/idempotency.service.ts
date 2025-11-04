@@ -1,11 +1,20 @@
-import { redisClient } from '../config/redis';
-import { ConflictError } from '../types';
-import { logger } from '../utils/logger';
-import { safeJsonParse } from '../utils/parsing';
+import { redisClient } from '../../config/redis';
+import { ConflictError } from '../../types';
+import { logger } from '../../utils/logger';
+import { safeJsonParse } from '../../utils/parsing';
+import { distributedLockService } from './distributed-lock.service';
 
 const IDEMPOTENCY_PREFIX = 'idempotency:';
 const IDEMPOTENCY_TTL = 86400; // 24 hours in seconds
 
+/**
+ * Idempotency Service
+ *
+ * Responsibility: Manage idempotency keys and results
+ * - Check if request was already processed
+ * - Store and retrieve idempotent results
+ * - Process requests with idempotency guarantees
+ */
 export class IdempotencyService {
   /**
    * Check if an idempotency key has already been processed
@@ -50,37 +59,6 @@ export class IdempotencyService {
   }
 
   /**
-   * Acquire a lock for processing an idempotent request
-   * Returns true if lock was acquired, false if already processing
-   */
-  async acquireLock(key: string, ttlSeconds: number = 300): Promise<boolean> {
-    try {
-      const lockKey = `${IDEMPOTENCY_PREFIX}lock:${key}`;
-      const acquired = await redisClient.set(lockKey, '1', {
-        NX: true,
-        EX: ttlSeconds,
-      });
-      return acquired === 'OK';
-    } catch (error) {
-      logger.error('Error acquiring idempotency lock', { key, error });
-      throw error;
-    }
-  }
-
-  /**
-   * Release an idempotency lock
-   */
-  async releaseLock(key: string): Promise<void> {
-    try {
-      const lockKey = `${IDEMPOTENCY_PREFIX}lock:${key}`;
-      await redisClient.del(lockKey);
-      logger.debug('Released idempotency lock', { key });
-    } catch (error) {
-      logger.error('Error releasing idempotency lock', { key, error });
-    }
-  }
-
-  /**
    * Process a request with idempotency
    * If the request has already been processed, return the stored result
    * Otherwise, execute the handler and store the result
@@ -93,13 +71,22 @@ export class IdempotencyService {
       return existing as T;
     }
 
-    // Try to acquire lock
-    const lockAcquired = await this.acquireLock(key);
+    // Use distributed lock service to ensure only one request processes
+    const lockKey = `${IDEMPOTENCY_PREFIX}lock:${key}`;
+    const lockAcquired = await distributedLockService.acquire(lockKey);
+
     if (!lockAcquired) {
       throw new ConflictError('Request is already being processed. Please try again later.');
     }
 
     try {
+      // Double-check result (might have been set while waiting for lock)
+      const existingAfterLock = await this.getIdempotentResult(key);
+      if (existingAfterLock) {
+        logger.info('Returning cached idempotent result (after lock)', { key });
+        return existingAfterLock as T;
+      }
+
       // Execute the handler
       const result = await handler();
 
@@ -109,7 +96,7 @@ export class IdempotencyService {
       return result;
     } finally {
       // Always release the lock
-      await this.releaseLock(key);
+      await distributedLockService.release(lockKey);
     }
   }
 }

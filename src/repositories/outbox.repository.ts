@@ -138,62 +138,6 @@ export class OutboxRepository {
     logger.info(`Cleaned up ${count} old outbox events`);
     return count;
   }
-
-  /**
-   * Get events for a specific aggregate (useful for replaying)
-   */
-  async getEventsForAggregate(aggregateId: string): Promise<OutboxRecord[]> {
-    const { data, error } = await supabase
-      .from('outbox')
-      .select('*')
-      .eq('aggregate_id', aggregateId)
-      .order('version', { ascending: true });
-
-    if (error) {
-      logger.error('Failed to fetch events for aggregate', { error, aggregateId });
-      return [];
-    }
-
-    return (data as OutboxRecord[]) || [];
-  }
-
-  /**
-   * Get statistics about outbox status
-   */
-  async getStatistics(): Promise<{
-    total: number;
-    pending: number;
-    published: number;
-    failed: number;
-  }> {
-    const { data: stats, error } = await supabase.rpc('get_outbox_stats');
-
-    if (error) {
-      logger.error('Failed to get outbox statistics', { error });
-      return { total: 0, pending: 0, published: 0, failed: 0 };
-    }
-
-    return stats || { total: 0, pending: 0, published: 0, failed: 0 };
-  }
-
-  /**
-   * Get next version for an aggregate
-   */
-  async getNextVersion(aggregateId: string): Promise<number> {
-    const { data, error } = await supabase
-      .from('outbox')
-      .select('version')
-      .eq('aggregate_id', aggregateId)
-      .order('version', { ascending: false })
-      .limit(1);
-
-    if (error) {
-      logger.error('Failed to get next version', { error, aggregateId });
-      return 1;
-    }
-
-    return (data?.[0]?.version || 0) + 1;
-  }
 }
 
 export const outboxRepository = new OutboxRepository();

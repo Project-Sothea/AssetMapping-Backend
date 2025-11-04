@@ -1,6 +1,6 @@
-import { getKafkaProducer, KAFKA_TOPICS } from '../config/kafka';
-import { SyncEvent, ImageEvent } from '../types';
-import { logger } from '../utils/logger';
+import { getKafkaProducer, KAFKA_TOPICS } from '../../config/kafka';
+import { SyncEvent, ImageEvent } from '../../types';
+import { logger } from '../../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
 export class EventService {

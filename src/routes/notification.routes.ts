@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server as HTTPServer } from 'http';
-import { notificationConsumerService } from '../services/notification-consumer.service';
+import { notificationConsumerService } from '../services/consumers/notification-consumer.service';
 import { logger } from '../utils/logger';
 import { parse as parseUrl } from 'url';
 import { safeJsonParse } from '../utils/parsing';

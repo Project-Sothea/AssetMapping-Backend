@@ -1,7 +1,7 @@
-import { outboxRepository } from '../repositories/outbox.repository';
+import { outboxRepository } from '../../repositories/outbox.repository';
 import { kafkaProducerService } from './kafka-producer.service';
-import { logger } from '../utils/logger';
-import { DomainEvent } from '../types/events';
+import { logger } from '../../utils/logger';
+import { DomainEvent } from '../../types/events';
 
 class OutboxRelayerService {
   private isRunning: boolean = false;
@@ -112,13 +112,6 @@ class OutboxRelayerService {
    */
   async cleanupOldEvents(daysToKeep: number = 30): Promise<number> {
     return await outboxRepository.cleanupOldEvents(daysToKeep);
-  }
-
-  /**
-   * Get outbox statistics
-   */
-  async getStatistics() {
-    return await outboxRepository.getStatistics();
   }
 
   /**

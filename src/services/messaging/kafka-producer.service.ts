@@ -1,7 +1,7 @@
 import { Kafka, Producer, RecordMetadata } from 'kafkajs';
-import { config } from '../config';
-import { logger } from '../utils/logger';
-import { DomainEvent } from '../types/events';
+import { config } from '../../config';
+import { logger } from '../../utils/logger';
+import { DomainEvent } from '../../types/events';
 
 class KafkaProducerService {
   private kafka: Kafka;
