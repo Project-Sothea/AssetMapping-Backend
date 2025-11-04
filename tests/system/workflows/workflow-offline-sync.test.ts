@@ -32,6 +32,7 @@ describe('Offline-to-Online Sync Workflow', () => {
     // Online: create initial pins
     const pin1 = TestDataGenerator.generatePin({ name: 'Initial Pin 1' });
     const pin2 = TestDataGenerator.generatePin({ name: 'Initial Pin 2' });
+    createdPinIds.push(pin1.id!, pin2.id!);
 
     await device.syncItem({
       idempotencyKey: device.generateIdempotencyKey(),
@@ -56,6 +57,7 @@ describe('Offline-to-Online Sync Workflow', () => {
     }> = [];
 
     const offlinePin = TestDataGenerator.generatePin({ name: 'Created Offline' });
+    createdPinIds.push(offlinePin.id!);
     offlineQueue.push({
       idempotencyKey: device.generateIdempotencyKey(),
       entityType: 'pin',
@@ -80,6 +82,7 @@ describe('Offline-to-Online Sync Workflow', () => {
     const offlineForm = TestDataGenerator.generateForm(offlinePin.id, {
       name: 'Form Created Offline',
     });
+    createdFormIds.push(offlineForm.id!);
     offlineQueue.push({
       idempotencyKey: device.generateIdempotencyKey(),
       entityType: 'form',
@@ -130,6 +133,7 @@ describe('Offline-to-Online Sync Workflow', () => {
     // Create pins
     for (let i = 0; i < 3; i++) {
       const pin = TestDataGenerator.generatePin({ name: `Pin ${i + 1}` });
+      createdPinIds.push(pin.id!);
       offlineQueue.push({
         idempotencyKey: device.generateIdempotencyKey(),
         entityType: 'pin',
@@ -144,6 +148,7 @@ describe('Offline-to-Online Sync Workflow', () => {
       const form = TestDataGenerator.generateForm(pinId, {
         name: 'Inspection Form',
       });
+      createdFormIds.push(form.id!);
       offlineQueue.push({
         idempotencyKey: device.generateIdempotencyKey(),
         entityType: 'form',

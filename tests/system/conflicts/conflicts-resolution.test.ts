@@ -28,6 +28,7 @@ describe('Conflict Resolution', () => {
    */
   test('should apply last-write-wins', async () => {
     const pin = TestDataGenerator.generatePin({ name: 'Original Name' });
+    createdPinIds.push(pin.id!);
 
     await device1.syncItem({
       idempotencyKey: device1.generateIdempotencyKey(),
@@ -66,6 +67,7 @@ describe('Conflict Resolution', () => {
    */
   test('should allow pull to resolve conflicts', async () => {
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
 
     await device1.syncItem({
       idempotencyKey: device1.generateIdempotencyKey(),

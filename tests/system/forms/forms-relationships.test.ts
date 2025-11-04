@@ -28,6 +28,7 @@ describe('Pin-Form Relationships', () => {
    */
   test('should maintain pin-form relationships', async () => {
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
     await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin',
@@ -36,6 +37,7 @@ describe('Pin-Form Relationships', () => {
     });
 
     const forms = TestDataGenerator.generateForms(3, pin.id);
+    createdFormIds.push(...forms.map((f) => f.id!));
     for (const form of forms) {
       await apiClient.syncItem({
         idempotencyKey: apiClient.generateIdempotencyKey(),
@@ -61,6 +63,7 @@ describe('Pin-Form Relationships', () => {
   test('should keep forms separate by pin', async () => {
     const pin1 = TestDataGenerator.generatePin();
     const pin2 = TestDataGenerator.generatePin();
+    createdPinIds.push(pin1.id!, pin2.id!);
 
     await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
@@ -78,6 +81,7 @@ describe('Pin-Form Relationships', () => {
 
     const forms1 = TestDataGenerator.generateForms(2, pin1.id);
     const forms2 = TestDataGenerator.generateForms(2, pin2.id);
+    createdFormIds.push(...forms1.map((f) => f.id!), ...forms2.map((f) => f.id!));
 
     for (const form of [...forms1, ...forms2]) {
       await apiClient.syncItem({

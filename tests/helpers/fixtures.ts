@@ -221,22 +221,37 @@ export class FixtureManager {
     try {
       const fixtureIds = this.getFixtureIds();
 
-      // Delete forms not in fixtures
-      const { error: formsError } = await supabase
+      // Delete forms not in fixtures (using NOT IN with array)
+      const { data: deletedForms, error: formsError } = await supabase
         .from('forms')
         .delete()
-        .not('id', 'in', `(${fixtureIds.forms.join(',')})`);
+        .not('id', 'in', `(${fixtureIds.forms.join(',')})`)
+        .select('id, name');
 
-      // Delete pins not in fixtures
-      const { error: pinsError } = await supabase
+      // Delete pins not in fixtures (using NOT IN with array)
+      const { data: deletedPins, error: pinsError } = await supabase
         .from('pins')
         .delete()
-        .not('id', 'in', `(${fixtureIds.pins.join(',')})`);
+        .not('id', 'in', `(${fixtureIds.pins.join(',')})`)
+        .select('id, name');
 
-      if (formsError) logger.error('Error cleaning mutable forms', { error: formsError });
-      if (pinsError) logger.error('Error cleaning mutable pins', { error: pinsError });
+      if (formsError) {
+        logger.error('Error cleaning mutable forms', { error: formsError });
+      } else if (deletedForms && deletedForms.length > 0) {
+        logger.info(`🧹 Deleted ${deletedForms.length} non-fixture form(s)`, {
+          forms: deletedForms.map((f) => f.name),
+        });
+      }
 
-      logger.info('🧹 Cleaned up mutable test data (fixtures preserved)');
+      if (pinsError) {
+        logger.error('Error cleaning mutable pins', { error: pinsError });
+      } else if (deletedPins && deletedPins.length > 0) {
+        logger.info(`🧹 Deleted ${deletedPins.length} non-fixture pin(s)`, {
+          pins: deletedPins.map((p) => p.name),
+        });
+      }
+
+      logger.info('✅ Mutable test data cleanup completed (fixtures preserved)');
     } catch (error) {
       logger.error('Error during mutable cleanup', { error });
       throw error;

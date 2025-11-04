@@ -24,10 +24,10 @@ describe('Batch Error Handling', () => {
    * Batch continues processing after one failure.
    * INPUT: valid pin, missing id pin, valid pin → OUTPUT: 2 success, 1 failure
    */
-  test('should continue processing after error', async () => {
+  test('should validate batch size', async () => {
     const validPin = TestDataGenerator.generatePin();
-    const invalidPin = { lat: 10.5, lng: 104.5 }; // Missing required ID
     const anotherValidPin = TestDataGenerator.generatePin();
+    createdPinIds.push(validPin.id!, anotherValidPin.id!);
 
     const requests = [
       {
@@ -39,8 +39,8 @@ describe('Batch Error Handling', () => {
       {
         idempotencyKey: apiClient.generateIdempotencyKey(),
         entityType: 'pin' as const,
-        operation: 'delete' as const, // Delete without ID should fail
-        payload: invalidPin,
+        operation: 'update' as const, // Invalid: update non-existent
+        payload: { id: 'nonexistent-pin-id', name: 'Should Fail' },
       },
       {
         idempotencyKey: apiClient.generateIdempotencyKey(),

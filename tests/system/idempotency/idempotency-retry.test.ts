@@ -11,12 +11,14 @@ import { DatabaseHelper } from '../../helpers/db-helper';
 describe('Idempotency Retry Handling', () => {
   let apiClient: ApiClient;
   const createdPinIds: string[] = [];
+  const createdFormIds: string[] = [];
 
   beforeAll(async () => {
     apiClient = new ApiClient();
   });
 
   afterAll(async () => {
+    await DatabaseHelper.cleanupSpecific('form', createdFormIds);
     await DatabaseHelper.cleanupSpecific('pin', createdPinIds);
   });
 
@@ -26,6 +28,7 @@ describe('Idempotency Retry Handling', () => {
    */
   test('should retry with exponential backoff', async () => {
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
     const request = {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin' as const,
@@ -49,6 +52,7 @@ describe('Idempotency Retry Handling', () => {
   test('should maintain idempotency across retries', async () => {
     // First create a pin to link the form to
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
     await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin',
@@ -57,6 +61,7 @@ describe('Idempotency Retry Handling', () => {
     });
 
     const form = TestDataGenerator.generateForm(pin.id);
+    createdFormIds.push(form.id!);
     const idempotencyKey = apiClient.generateIdempotencyKey();
 
     const request = {
@@ -82,6 +87,7 @@ describe('Idempotency Retry Handling', () => {
    */
   test('should handle batch retries', async () => {
     const pins = TestDataGenerator.generatePins(3);
+    createdPinIds.push(...pins.map((p) => p.id!));
 
     const requests = pins.map((pin) => ({
       idempotencyKey: apiClient.generateIdempotencyKey(),
@@ -128,6 +134,7 @@ describe('Idempotency Retry Handling', () => {
 
     const pin1 = TestDataGenerator.generatePin();
     const pin2 = TestDataGenerator.generatePin();
+    createdPinIds.push(pin1.id!, pin2.id!);
 
     const response1 = await device1.syncItem({
       idempotencyKey: device1.generateIdempotencyKey(),

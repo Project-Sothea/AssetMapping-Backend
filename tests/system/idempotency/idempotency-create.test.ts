@@ -21,8 +21,8 @@ describe('Idempotent Create Operations', () => {
   });
 
   afterAll(async () => {
-    await DatabaseHelper.cleanupSpecific('pin', createdPinIds);
     await DatabaseHelper.cleanupSpecific('form', createdFormIds);
+    await DatabaseHelper.cleanupSpecific('pin', createdPinIds);
   });
 
   /**

@@ -28,6 +28,8 @@ describe('Concurrent Updates', () => {
    */
   test('should handle concurrent updates', async () => {
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
+
     const createResponse = await device1.syncItem({
       idempotencyKey: device1.generateIdempotencyKey(),
       entityType: 'pin',
@@ -85,6 +87,7 @@ describe('Concurrent Updates', () => {
    */
   test('should maintain version consistency', async () => {
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
 
     const createResponse = await device1.syncItem({
       idempotencyKey: device1.generateIdempotencyKey(),

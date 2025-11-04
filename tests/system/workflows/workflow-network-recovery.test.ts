@@ -27,9 +27,11 @@ describe('Network Failure Recovery', () => {
    * Network failures with retry and exponential backoff.
    * INPUT: pin + form with retries → OUTPUT: both created, no duplicates
    */
-  test('should recover from network failures', async () => {
-    const pin = TestDataGenerator.generatePin({ name: 'Test Pin for Retry' });
+  test('should sync after network reconnection', async () => {
+    const pin = TestDataGenerator.generatePin();
     const form = TestDataGenerator.generateForm(pin.id);
+    createdPinIds.push(pin.id!);
+    createdFormIds.push(form.id!);
 
     const pinRequest = {
       idempotencyKey: device.generateIdempotencyKey(),

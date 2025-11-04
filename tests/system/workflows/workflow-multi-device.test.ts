@@ -34,6 +34,7 @@ describe('Multi-Device Conflicts', () => {
       name: 'Shared Pin',
       description: 'Original',
     });
+    createdPinIds.push(sharedPin.id!);
 
     await device1.syncItem({
       idempotencyKey: device1.generateIdempotencyKey(),

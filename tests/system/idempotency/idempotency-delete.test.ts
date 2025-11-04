@@ -26,6 +26,7 @@ describe('Idempotent Delete Operations', () => {
    */
   test('should handle duplicate delete requests', async () => {
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
     await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin',
