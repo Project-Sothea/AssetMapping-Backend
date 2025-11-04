@@ -96,8 +96,33 @@ export class FormOperations {
       }
     }
 
-    const nextVersion = await versionManagerService.getNextVersion('forms', data.id);
-    const formData = this.prepareFormData(data, nextVersion);
+    // Determine version: check if entity exists in database
+    let version = 1; // Default for new entities
+
+    if (data.id) {
+      const { data: existing } = await supabase
+        .from('forms')
+        .select('version')
+        .eq('id', data.id)
+        .single();
+
+      if (existing) {
+        // Entity exists - increment version
+        version = (existing.version || 1) + 1;
+        logger.info('Incrementing version for existing form', {
+          formId: data.id,
+          oldVersion: existing.version,
+          newVersion: version,
+        });
+      } else {
+        // Entity doesn't exist - use version 1
+        logger.info('Creating new form with version 1', { formId: data.id });
+      }
+    } else {
+      logger.info('Creating new form without ID (will be assigned by DB)');
+    }
+
+    const formData = this.prepareFormData(data, version);
 
     const { data: result, error } = await supabase
       .from('forms')
@@ -110,19 +135,24 @@ export class FormOperations {
       throw error;
     }
 
-    logger.info('Form synced successfully', { formId: result.id, version: nextVersion });
+    logger.info('Form synced successfully', { formId: result.id, version: result.version });
     return result as FormData;
   }
 
   /**
    * Prepare form data with status and timestamps
+   * Excludes local-only columns that should not be saved to the database
    */
   private prepareFormData(data: FormData, version: number): FormData {
     const isCreate = !data.id;
     const now = new Date().toISOString();
 
+    // Create a copy and exclude local-only columns
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { failureReason, lastSyncedAt, lastFailedSyncAt, ...cleanData } = data;
+
     return {
-      ...data,
+      ...cleanData,
       version,
       status: data.status || 'synced',
       updatedAt: now,

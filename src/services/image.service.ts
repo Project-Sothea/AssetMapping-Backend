@@ -49,6 +49,48 @@ export class ImageService {
     logger.info('Signed upload URL generated', { path });
     return response;
   }
+
+  /**
+   * Delete an image from Supabase storage by its public URL
+   */
+  async deleteImageByUrl(publicUrl: string): Promise<void> {
+    try {
+      // Extract the path from the public URL
+      // Example URL: https://abc.supabase.co/storage/v1/object/public/images/pin/uuid/filename.jpg
+      const urlParts = publicUrl.split('/storage/v1/object/public/images/');
+      if (urlParts.length < 2) {
+        logger.warn('Invalid image URL format, skipping deletion', { publicUrl });
+        return;
+      }
+
+      const path = urlParts[1];
+      logger.info('Deleting image from storage', { path });
+
+      const { error } = await supabase.storage.from(BUCKET_NAME).remove([path]);
+
+      if (error) {
+        logger.error('Error deleting image from storage', { error, path });
+        // Don't throw - deletion failure shouldn't block pin updates
+      } else {
+        logger.info('Image deleted successfully', { path });
+      }
+    } catch (error) {
+      logger.error('Exception while deleting image', { error, publicUrl });
+      // Don't throw - deletion failure shouldn't block pin updates
+    }
+  }
+
+  /**
+   * Delete multiple images from Supabase storage
+   */
+  async deleteImages(publicUrls: string[]): Promise<void> {
+    logger.info('Deleting multiple images', { count: publicUrls.length });
+
+    // Delete in parallel for better performance
+    await Promise.all(publicUrls.map((url) => this.deleteImageByUrl(url)));
+
+    logger.info('Batch image deletion completed', { count: publicUrls.length });
+  }
 }
 
 export const imageService = new ImageService();
