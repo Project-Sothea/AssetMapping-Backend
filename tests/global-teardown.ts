@@ -8,7 +8,7 @@ import { logger } from '../src/utils/logger';
 
 export default async function globalTeardown() {
   console.log('🧹 Global Teardown: Cleaning up non-fixture test data...');
-  
+
   try {
     await FixtureManager.cleanupMutableData();
     console.log('✅ Global Teardown: Non-fixture data cleaned up successfully');
