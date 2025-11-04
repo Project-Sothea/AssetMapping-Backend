@@ -1,6 +1,5 @@
 import { PinData, FormData, SyncItemRequest } from '../../../types';
 import { syncEventPublisher } from '../publishers/sync-event.publisher';
-import { domainEventPublisher } from '../publishers/domain-event.publisher';
 import { auditLogPublisher } from '../publishers/audit-log.publisher';
 
 /**
@@ -22,7 +21,6 @@ export class EventPublisher {
   ): Promise<void> {
     await Promise.all([
       syncEventPublisher.publish(request, result),
-      domainEventPublisher.publish(request, result),
       auditLogPublisher.publish(request, result),
     ]);
   }

@@ -38,13 +38,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Request logging
 app.use(requestLogger);
 
-// Rate limiting
+// Rate limiting (relaxed for non-production environments)
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,
   max: config.rateLimit.maxRequests,
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  // Skip rate limiting in development/test to avoid blocking during testing
+  skip: (_req) => config.nodeEnv === 'development' || config.nodeEnv === 'test',
 });
 app.use('/api/', limiter);
 
@@ -87,22 +89,10 @@ const startServer = async () => {
     await getKafkaProducer();
     logger.info('✓ Kafka producer connected');
 
-    // Start Kafka Producer for outbox
+    // Start Kafka Producer
     const { kafkaProducerService } = await import('./services/messaging/kafka-producer.service');
     await kafkaProducerService.connect();
     logger.info('✓ Kafka producer service connected');
-
-    // Start Outbox Relayer (polls outbox and publishes to Kafka)
-    const { outboxRelayerService } = await import('./services/messaging/outbox-relayer.service');
-    await outboxRelayerService.start();
-    logger.info('✓ Outbox relayer started');
-
-    // Start Projection Consumer (applies events to read models)
-    const { projectionConsumerService } = await import(
-      './services/consumers/projection-consumer.service'
-    );
-    await projectionConsumerService.start();
-    logger.info('✓ Projection consumer started');
 
     // Start Notification Consumer (real-time notifications)
     const { notificationConsumerService } = await import(
@@ -129,24 +119,12 @@ const startServer = async () => {
       server.close(async () => {
         try {
           // Stop event-driven services
-          const { outboxRelayerService } = await import(
-            './services/messaging/outbox-relayer.service'
-          );
-          const { projectionConsumerService } = await import(
-            './services/consumers/projection-consumer.service'
-          );
           const { notificationConsumerService } = await import(
             './services/consumers/notification-consumer.service'
           );
           const { kafkaProducerService } = await import(
             './services/messaging/kafka-producer.service'
           );
-
-          await outboxRelayerService.stop();
-          logger.info('✓ Outbox relayer stopped');
-
-          await projectionConsumerService.stop();
-          logger.info('✓ Projection consumer stopped');
 
           await notificationConsumerService.stop();
           logger.info('✓ Notification consumer stopped');

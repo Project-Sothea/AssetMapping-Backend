@@ -37,7 +37,7 @@ export interface BatchSyncResult {
   request: SyncItemRequest;
 }
 
-// Pin types (migrated from frontend)
+// Pin types (matches actual database schema - verified 2025-11-05)
 export interface PinData {
   id?: string;
   lat: number;
@@ -47,12 +47,16 @@ export interface PinData {
   address?: string;
   cityVillage?: string;
   description?: string;
-  images?: string | null;
+  images?: string; // JSON array string, e.g., "[]" or "[\"url1\",\"url2\"]"
+  localImages?: string; // JSON array string, e.g., "[]" or "[\"path1\",\"path2\"]"
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string | null;
   version?: number;
-  userId?: string;
+  status?: string | null;
+  failureReason?: string | null;
+  lastSyncedAt?: string | null;
+  lastFailedSyncAt?: string | null;
 }
 
 export const PinDataSchema = z.object({
@@ -64,38 +68,92 @@ export const PinDataSchema = z.object({
   address: z.string().optional(),
   cityVillage: z.string().optional(),
   description: z.string().optional(),
-  images: z.string().nullable().optional(),
+  images: z.string().optional(), // JSON array string
+  localImages: z.string().optional(), // JSON array string
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
   deletedAt: z.string().nullable().optional(),
   version: z.number().optional(),
-  userId: z.string().optional(),
+  status: z.string().nullable().optional(),
+  failureReason: z.string().nullable().optional(),
+  lastSyncedAt: z.string().nullable().optional(),
+  lastFailedSyncAt: z.string().nullable().optional(),
 });
 
-// Form types (migrated from frontend)
+// Form types (matches actual database schema - verified 2025-11-05)
+// Note: All health survey fields are stored as strings (often JSON arrays for multi-select)
 export interface FormData {
   id?: string;
   pinId?: string;
   name?: string;
-  formType: string;
-  data: Record<string, unknown>;
-  status?: 'draft' | 'submitted' | 'synced';
+  formType?: string; // Not stored in DB, used for business logic only
   createdAt?: string;
   updatedAt?: string;
-  userId?: string;
+  deletedAt?: string | null;
+  village?: string | null;
+  villageId?: string | null;
+  failureReason?: string | null;
+  status?: string | null;
+  lastSyncedAt?: string | null;
+  lastFailedSyncAt?: string | null;
+  version?: number;
+  // Health survey specific fields - all stored as strings (JSON arrays for multi-select)
+  canAttend?: unknown;
+  otherCondition?: unknown;
+  conditionDetails?: unknown;
+  otherManagement?: unknown;
+  otherSickAction?: unknown;
+  knowDoctor?: unknown;
+  ownTransport?: unknown;
+  whereBuyMedicine?: unknown;
+  otherBuyMedicine?: unknown;
+  povertyCard?: unknown;
+  brushTeeth?: unknown;
+  otherBrushTeeth?: unknown;
+  haveToothbrush?: unknown;
+  diarrhoea?: unknown;
+  diarrhoeaAction?: unknown;
+  coldLookLike?: unknown;
+  mskInjury?: unknown;
+  hypertension?: unknown;
+  cholesterol?: unknown;
+  diabetes?: unknown;
+  handBeforeMeal?: unknown;
+  handAfterToilet?: unknown;
+  eatCleanFood?: unknown;
+  otherLearning?: unknown;
+  otherWaterSource?: unknown;
+  knowWaterFilters?: unknown;
+  otherWaterFilterReason?: unknown;
+  cholesterolAction?: unknown;
+  coldAction?: unknown;
+  diabetesAction?: unknown;
+  hypertensionAction?: unknown;
+  longTermConditions?: unknown;
+  managementMethods?: unknown;
+  mskAction?: unknown;
+  notUsingWaterFilter?: unknown;
+  unsafeWater?: unknown;
+  waterSources?: unknown;
+  whatDoWhenSick?: unknown;
 }
 
-export const FormDataSchema = z.object({
-  id: z.string().optional(),
-  pinId: z.string().optional(),
-  name: z.string().optional(),
-  formType: z.string().min(1),
-  data: z.record(z.any()),
-  status: z.enum(['draft', 'submitted', 'synced']).optional(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-  userId: z.string().optional(),
-});
+export const FormDataSchema = z
+  .object({
+    id: z.string().optional(),
+    pinId: z.string().optional(),
+    name: z.string().optional(),
+    formType: z.string().optional(),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+    deletedAt: z.string().nullable().optional(),
+    village: z.string().nullable().optional(),
+    villageId: z.string().nullable().optional(),
+    status: z.string().nullable().optional(),
+    version: z.number().optional(),
+    // Allow all other fields as optional
+  })
+  .passthrough();
 
 // Image types
 export interface ImageUploadRequest {

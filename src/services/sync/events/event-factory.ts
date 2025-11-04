@@ -14,7 +14,7 @@ import { versionManagerService } from '../../infrastructure/version-manager.serv
  */
 
 /**
- * Create domain event for outbox
+ * Create domain event for Kafka publishing
  */
 export async function createDomainEvent(
   eventType: string,

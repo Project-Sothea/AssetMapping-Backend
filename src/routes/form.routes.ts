@@ -16,6 +16,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
     const { data, error } = await supabase
       .from('forms')
       .select('*')
+      .is('deletedAt', null) // Only return non-deleted forms
       .order('createdAt', { ascending: false });
 
     if (error) {

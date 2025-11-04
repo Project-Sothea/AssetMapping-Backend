@@ -16,6 +16,7 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
     const { data, error } = await supabase
       .from('pins')
       .select('*')
+      .is('deletedAt', null) // Only return non-deleted pins
       .order('createdAt', { ascending: false });
 
     if (error) {

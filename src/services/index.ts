@@ -3,7 +3,7 @@
 export * from './infrastructure';
 
 // ==================== Messaging Services ====================
-// Event publishing, Kafka operations, outbox pattern
+// Event publishing and Kafka operations
 export * from './messaging';
 
 // ==================== Notification Services ====================
@@ -13,10 +13,6 @@ export * from './notifications';
 // ==================== Consumer Services ====================
 // Background workers that consume and process events
 export * from './consumers';
-
-// ==================== Projection Handlers ====================
-// Update read models from domain events
-export * from './projections';
 
 // ==================== Sync Services ====================
 // Synchronization logic for offline-first support
@@ -29,7 +25,6 @@ export { createDomainEvent } from './sync/events/event-factory';
 
 // Specialized publishers
 export { syncEventPublisher } from './sync/publishers/sync-event.publisher';
-export { domainEventPublisher } from './sync/publishers/domain-event.publisher';
 export { auditLogPublisher } from './sync/publishers/audit-log.publisher';
 
 // ==================== Domain Services ====================

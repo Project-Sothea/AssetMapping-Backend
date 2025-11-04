@@ -29,14 +29,19 @@ export class PinOperations {
   }
 
   /**
-   * Delete a pin from the database
+   * Delete a pin from the database (soft delete)
    */
   private async deletePin(pinId: string | undefined): Promise<{ id: string; deleted: boolean }> {
     if (!pinId) {
       throw new Error('Pin ID is required for delete operation');
     }
 
-    const { error } = await supabase.from('pins').delete().eq('id', pinId);
+    // Soft delete by setting deletedAt timestamp
+    const { error } = await supabase
+      .from('pins')
+      .update({ deletedAt: new Date().toISOString() })
+      .eq('id', pinId);
+
     if (error) throw error;
 
     return { id: pinId, deleted: true };
@@ -44,8 +49,54 @@ export class PinOperations {
 
   /**
    * Create or update a pin in the database
+   * Uses Last-Write-Wins conflict resolution based on updatedAt timestamp
    */
   private async upsertPin(data: PinData): Promise<PinData> {
+    // Check if this is an update with an old version - use timestamp to resolve
+    if (data.id && data.version) {
+      const currentVersion = await versionManagerService.getCurrentVersion('pins', data.id);
+
+      // If entity exists and client's version is behind
+      if (currentVersion > 0 && data.version < currentVersion) {
+        // Fetch current server data to compare timestamps
+        const { data: serverData } = await supabase
+          .from('pins')
+          .select('updatedAt')
+          .eq('id', data.id)
+          .single();
+
+        if (serverData) {
+          const clientTime = new Date(data.updatedAt || 0).getTime();
+          const serverTime = new Date(serverData.updatedAt || 0).getTime();
+
+          // If server data is newer, reject the update
+          if (serverTime >= clientTime) {
+            logger.warn('Rejecting older update - server data is newer', {
+              pinId: data.id,
+              clientVersion: data.version,
+              serverVersion: currentVersion,
+              clientTime: new Date(clientTime).toISOString(),
+              serverTime: new Date(serverTime).toISOString(),
+            });
+
+            throw new Error(
+              `Conflict: Server has newer data (updated ${new Date(serverTime).toISOString()}). ` +
+                `Your changes are from ${new Date(clientTime).toISOString()}. Please pull latest data.`
+            );
+          }
+
+          // Client data is newer - allow it to overwrite (Last-Write-Wins)
+          logger.info('Accepting newer update despite version conflict', {
+            pinId: data.id,
+            clientVersion: data.version,
+            serverVersion: currentVersion,
+            clientTime: new Date(clientTime).toISOString(),
+            serverTime: new Date(serverTime).toISOString(),
+          });
+        }
+      }
+    }
+
     const nextVersion = await versionManagerService.getNextVersion('pins', data.id);
     const pinData = this.preparePinData(data, nextVersion);
 
