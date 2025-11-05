@@ -2,7 +2,7 @@ import { redisClient } from '../../config/redis';
 import { logger } from '../../utils/logger';
 
 const LOCK_PREFIX = 'lock:';
-const DEFAULT_TTL = 300; // 5 minutes
+const DEFAULT_TTL = 30; // 30 seconds - reduced from 5 minutes to handle concurrent requests better
 
 /**
  * Distributed Lock Service

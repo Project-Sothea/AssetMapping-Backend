@@ -160,19 +160,20 @@ export class IdempotencyService {
         logger.info('Lock not acquired, waiting for cached result...', { key });
 
         // Poll for cached result (other request should complete soon)
-        for (let i = 0; i < 10; i++) {
-          await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100ms
+        // Increased from 1s to 10s to handle slow localtunnel connections
+        for (let i = 0; i < 50; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 200)); // Wait 200ms (total 10 seconds)
           const cachedResult = await this.getIdempotentResult(key);
           if (cachedResult) {
             logger.info('Returning cached result after waiting', {
               key,
-              waitTime: `${(i + 1) * 100}ms`,
+              waitTime: `${(i + 1) * 200}ms`,
             });
             return cachedResult as T;
           }
         }
 
-        // If still no result after 1 second, throw conflict error
+        // If still no result after 10 seconds, throw conflict error
         throw new ConflictError('Request is already being processed. Please try again later.');
       }
 
