@@ -173,30 +173,77 @@ Follow the existing test structure:
 4. Clean up in `afterAll()` hooks
 5. Use descriptive test names
 
+### Test Format Guidelines
+
+**File Header:**
+
+```typescript
+/**
+ * TEST: [Feature Name]
+ * [One-line description of what is tested]
+ * INPUT: [what goes in] → OUTPUT: [what is expected]
+ */
+```
+
+**Test Function Comments:**
+
+```typescript
+/**
+ * [Short description of scenario]
+ * INPUT: [input data/actions] → OUTPUT: [expected result]
+ */
+test('should [action]', async () => {
+  // Test implementation
+});
+```
+
+**Principles:**
+
+- **Concise**: Focus on essential scenarios only
+- **Efficient**: Use selective cleanup (track IDs), not global cleanup
+- **Clear**: Each test documents input→output in comment
+- **Targeted**: Test one thing per test, avoid excessive mocking
+- **Realistic**: Simulate real-world usage patterns
+
 Example:
 
 ```typescript
-describe('My New Feature', () => {
+/**
+ * TEST: Pin Creation
+ * Validates creating new pins via sync endpoint.
+ * INPUT: pin data → OUTPUT: pin created in database with version=1
+ */
+
+describe('Pin Creation', () => {
   let apiClient: ApiClient;
+  const createdPinIds: string[] = [];
 
   beforeAll(async () => {
     apiClient = new ApiClient();
-    await DatabaseHelper.cleanup();
   });
 
   afterAll(async () => {
-    await DatabaseHelper.cleanup();
+    await DatabaseHelper.cleanupSpecific('pin', createdPinIds);
   });
 
-  test('should do something', async () => {
+  /**
+   * Basic pin creation succeeds.
+   * INPUT: valid pin data → OUTPUT: success response, pin in DB
+   */
+  test('should create a new pin', async () => {
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
+
     const response = await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin',
       operation: 'create',
       payload: pin,
     });
+
     expect(response.success).toBe(true);
+    const dbPin = await DatabaseHelper.getPin(pin.id!);
+    expect(dbPin).not.toBeNull();
   });
 });
 ```

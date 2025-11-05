@@ -52,6 +52,7 @@ export class ImageService {
 
   /**
    * Delete an image from Supabase storage by its public URL
+   * Throws error if deletion fails (for proper error handling in operations)
    */
   async deleteImageByUrl(publicUrl: string): Promise<void> {
     try {
@@ -70,18 +71,19 @@ export class ImageService {
 
       if (error) {
         logger.error('Error deleting image from storage', { error, path });
-        // Don't throw - deletion failure shouldn't block pin updates
-      } else {
-        logger.info('Image deleted successfully', { path });
+        throw new Error(`Failed to delete image: ${error.message}`);
       }
+
+      logger.info('Image deleted successfully', { path });
     } catch (error) {
       logger.error('Exception while deleting image', { error, publicUrl });
-      // Don't throw - deletion failure shouldn't block pin updates
+      throw error;
     }
   }
 
   /**
    * Delete multiple images from Supabase storage
+   * Throws error if any deletion fails
    */
   async deleteImages(publicUrls: string[]): Promise<void> {
     logger.info('Deleting multiple images', { count: publicUrls.length });

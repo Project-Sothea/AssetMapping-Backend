@@ -4,18 +4,35 @@ import { pinOperations } from './operations/pin.operations';
 import { formOperations } from './operations/form.operations';
 import { eventPublisher } from './events/event-publisher';
 
+const OPERATION_TIMEOUT_MS = 25000; // 25s (less than client's 30s timeout)
+
 export class SyncService {
   /**
-   * Process a sync item with idempotency
+   * Process a sync item with idempotency and timeout
    */
   async syncItem(
     request: SyncItemRequest
   ): Promise<PinData | FormData | { id: string; deleted: boolean }> {
-    return idempotencyService.processWithIdempotency(request.idempotencyKey, async () => {
-      const result = await this.executeSyncOperation(request);
-      await eventPublisher.publishEvents(request, result);
-      return result;
-    });
+    return this.withTimeout(
+      idempotencyService.processWithIdempotency(request.idempotencyKey, async () => {
+        const result = await this.executeSyncOperation(request);
+        await eventPublisher.publishEvents(request, result);
+        return result;
+      }),
+      OPERATION_TIMEOUT_MS
+    );
+  }
+
+  /**
+   * Wrap operation with timeout
+   */
+  private async withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(`Operation timeout after ${timeoutMs}ms`)), timeoutMs)
+      ),
+    ]);
   }
 
   /**
