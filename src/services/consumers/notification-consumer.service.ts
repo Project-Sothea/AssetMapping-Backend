@@ -2,6 +2,7 @@ import { Kafka, Consumer, EachMessagePayload } from 'kafkajs';
 import { config } from '../../config';
 import { logger } from '../../utils/logger';
 import { DomainEvent } from '../../types/events';
+import { SyncEvent } from '../../types';
 import { WebSocket } from 'ws';
 import { safeJsonParse } from '../../utils/parsing';
 import { webSocketManagerService } from '../notifications/websocket-manager.service';
@@ -53,7 +54,7 @@ class NotificationConsumerService {
 
       // Subscribe to all event topics
       await this.consumer.subscribe({
-        topics: ['pins', 'forms', 'images', 'sync-batches'],
+        topics: ['sync.events', 'pin.events', 'form.events', 'image.events'],
         fromBeginning: false, // Only process new events
       });
 
@@ -110,16 +111,20 @@ class NotificationConsumerService {
         return;
       }
 
-      const event: DomainEvent = safeJsonParse(message.value.toString(), {} as DomainEvent);
+      const rawEvent = safeJsonParse(message.value.toString(), {} as Record<string, unknown>);
 
       logger.debug('Processing notification event', {
         topic,
-        eventType: event.type,
-        aggregateId: event.aggregateId,
+        eventType: rawEvent.type || rawEvent.eventType,
+        aggregateId: rawEvent.aggregateId || rawEvent.entityId,
       });
 
-      // Route event to appropriate handler
-      await this.routeEvent(event);
+      // Handle different event formats
+      if (topic === 'sync.events') {
+        await this.handleSyncEvent(rawEvent as unknown as SyncEvent);
+      } else {
+        await this.routeEvent(rawEvent as DomainEvent);
+      }
     } catch (error) {
       logger.error('Error processing notification message', {
         error,
@@ -129,6 +134,43 @@ class NotificationConsumerService {
       });
       // Don't throw - we don't want to stop the consumer on individual message errors
     }
+  }
+
+  /**
+   * Handle sync events from sync.events topic
+   */
+  private async handleSyncEvent(syncEvent: SyncEvent): Promise<void> {
+    // Transform sync event into a notification format
+    const notification = {
+      type: syncEvent.entityType,
+      action: this.extractActionFromSyncEventType(syncEvent.eventType),
+      eventId: syncEvent.eventId,
+      aggregateId: syncEvent.entityId,
+      timestamp: syncEvent.timestamp,
+      payload: {
+        entityType: syncEvent.entityType,
+        entityId: syncEvent.entityId,
+        ...syncEvent.payload,
+      },
+    };
+
+    logger.debug('Broadcasting sync event notification', {
+      type: notification.type,
+      action: notification.action,
+      entityId: notification.aggregateId,
+    });
+
+    // Broadcast notification via WebSocket manager
+    await webSocketManagerService.broadcast(notification);
+  }
+
+  /**
+   * Extract action from sync event type
+   * Examples: sync.item.created -> created, sync.item.updated -> updated
+   */
+  private extractActionFromSyncEventType(eventType: string): string {
+    const parts = eventType.split('.');
+    return parts[parts.length - 1]; // Get the last part (created, updated, deleted)
   }
 
   /**

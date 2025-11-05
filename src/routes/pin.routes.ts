@@ -36,4 +36,47 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+/**
+ * GET /api/pins/:id
+ * Fetch a single pin by ID
+ * Used by frontend for real-time sync of specific pin updates
+ */
+router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    logger.info('Fetching single pin', { pinId: id });
+
+    const { data, error } = await supabase
+      .from('pins')
+      .select('*')
+      .eq('id', id)
+      .is('deletedAt', null)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned
+        logger.warn('Pin not found', { pinId: id });
+        res.status(404).json({
+          success: false,
+          error: 'Pin not found',
+        });
+        return;
+      }
+      logger.error('Error fetching pin', { error, pinId: id });
+      throw error;
+    }
+
+    logger.info('Successfully fetched pin', { pinId: id });
+
+    res.json({
+      success: true,
+      data,
+      message: 'Pin fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
