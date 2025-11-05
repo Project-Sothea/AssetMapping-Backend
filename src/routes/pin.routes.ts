@@ -37,6 +37,53 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
 });
 
 /**
+ * GET /api/pins/since/:timestamp
+ * Fetch all pins updated after a specific timestamp
+ * Used by frontend for incremental sync after reconnection
+ */
+router.get('/since/:timestamp', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { timestamp } = req.params;
+    logger.info('Fetching pins since timestamp', { timestamp });
+
+    // Convert Unix timestamp to ISO string
+    const date = new Date(parseInt(timestamp, 10));
+    if (isNaN(date.getTime())) {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid timestamp',
+      });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('pins')
+      .select('*')
+      .is('deletedAt', null)
+      .gte('updatedAt', date.toISOString())
+      .order('updatedAt', { ascending: true });
+
+    if (error) {
+      logger.error('Error fetching pins since timestamp', { error, timestamp });
+      throw error;
+    }
+
+    logger.info('Successfully fetched pins since timestamp', {
+      timestamp,
+      count: data?.length || 0,
+    });
+
+    res.json({
+      success: true,
+      data: data || [],
+      message: 'Pins fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * GET /api/pins/:id
  * Fetch a single pin by ID
  * Used by frontend for real-time sync of specific pin updates

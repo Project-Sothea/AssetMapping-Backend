@@ -37,6 +37,53 @@ router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
 });
 
 /**
+ * GET /api/forms/since/:timestamp
+ * Fetch all forms updated after a specific timestamp
+ * Used by frontend for incremental sync after reconnection
+ */
+router.get('/since/:timestamp', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { timestamp } = req.params;
+    logger.info('Fetching forms since timestamp', { timestamp });
+
+    // Convert Unix timestamp to ISO string
+    const date = new Date(parseInt(timestamp, 10));
+    if (isNaN(date.getTime())) {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid timestamp',
+      });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('forms')
+      .select('*')
+      .is('deletedAt', null)
+      .gte('updatedAt', date.toISOString())
+      .order('updatedAt', { ascending: true });
+
+    if (error) {
+      logger.error('Error fetching forms since timestamp', { error, timestamp });
+      throw error;
+    }
+
+    logger.info('Successfully fetched forms since timestamp', {
+      timestamp,
+      count: data?.length || 0,
+    });
+
+    res.json({
+      success: true,
+      data: data || [],
+      message: 'Forms fetched successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * GET /api/forms/:id
  * Fetch a single form by ID
  * Used by frontend for real-time sync of specific form updates

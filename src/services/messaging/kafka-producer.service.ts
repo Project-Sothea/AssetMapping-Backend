@@ -26,10 +26,9 @@ class KafkaProducerService {
 
     try {
       this.producer = this.kafka.producer({
-        allowAutoTopicCreation: false,
+        allowAutoTopicCreation: true, // Allow auto-creation for new topics
         transactionTimeout: 30000,
       });
-
       await this.producer.connect();
       this.isConnected = true;
       logger.info('Kafka producer connected');

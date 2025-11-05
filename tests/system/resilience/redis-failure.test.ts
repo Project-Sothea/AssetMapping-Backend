@@ -35,16 +35,21 @@ describe('Redis Failure Handling', () => {
   });
 
   /**
-   * Redis unavailable at request time.
-   * INPUT: Redis down, pin create request → OUTPUT: clear error, operation fails
-   * NOTE: After Priority 1 fix, operations MUST fail when Redis unavailable (no degraded mode)
+   * Redis unavailable at request time - DEGRADED MODE.
+   * INPUT: Redis down, pin create request → OUTPUT: operation succeeds, warning logged
+   * NOTE: Database constraints prevent duplicates even without Redis cache
+   * This ensures field workers can continue syncing when Redis unavailable
    */
-  test('should fail gracefully when Redis is unavailable', async () => {
-    // Disconnect Redis
-    await redisClient.quit();
+  test('should operate in degraded mode when Redis is unavailable', async () => {
+    // Disconnect Redis if it's still connected
+    if (redisClient.isOpen) {
+      await redisClient.quit();
+    }
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const pin = TestDataGenerator.generatePin();
+    createdPinIds.push(pin.id!);
+
     const response = await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin',
@@ -52,19 +57,19 @@ describe('Redis Failure Handling', () => {
       payload: pin,
     });
 
-    // Operation should fail with clear error
-    expect(response.success).toBe(false);
-    expect(response.error).toBeDefined();
-    expect(response.error?.toLowerCase()).toMatch(/redis|service.*unavailable|temporarily/i);
+    // Operation should succeed in degraded mode
+    expect(response.success).toBe(true);
+    expect(response.data).toBeDefined();
 
-    // Verify no data was created (no degraded mode execution)
+    // Verify data was created (degraded mode execution)
     const dbPin = await DatabaseHelper.getPin(pin.id!);
-    expect(dbPin).toBeNull();
+    expect(dbPin).not.toBeNull();
+    expect(dbPin?.id).toBe(pin.id);
   }, 10000);
 
   /**
    * Redis recovery after failure.
-   * INPUT: Redis down then up → OUTPUT: operations resume normally
+   * INPUT: Redis down then up → OUTPUT: operations resume normally with full caching
    */
   test('should recover when Redis comes back online', async () => {
     const pin1 = TestDataGenerator.generatePin();
@@ -84,35 +89,39 @@ describe('Redis Failure Handling', () => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     const pin2 = TestDataGenerator.generatePin();
+    createdPinIds.push(pin2.id!);
 
-    // Operation should fail with Redis down
-    const failedOp = await apiClient.syncItem({
+    // Operation should succeed in degraded mode with Redis down
+    const degradedOp = await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin',
       operation: 'create',
       payload: pin2,
     });
-    expect(failedOp.success).toBe(false);
+    expect(degradedOp.success).toBe(true);
 
     // Reconnect Redis
     await redisClient.connect();
     await new Promise((resolve) => setTimeout(resolve, 1500)); // Wait for connection to stabilize
 
-    // Retry should succeed now
-    createdPinIds.push(pin2.id!);
-    const retryOp = await apiClient.syncItem({
+    // New operations should use Redis cache again
+    const pin3 = TestDataGenerator.generatePin();
+    createdPinIds.push(pin3.id!);
+    const cachedOp = await apiClient.syncItem({
       idempotencyKey: apiClient.generateIdempotencyKey(),
       entityType: 'pin',
       operation: 'create',
-      payload: pin2,
+      payload: pin3,
     });
-    expect(retryOp.success).toBe(true);
+    expect(cachedOp.success).toBe(true);
 
-    // Verify both pins exist
+    // Verify all three pins exist
     const dbPin1 = await DatabaseHelper.getPin(pin1.id!);
     const dbPin2 = await DatabaseHelper.getPin(pin2.id!);
+    const dbPin3 = await DatabaseHelper.getPin(pin3.id!);
     expect(dbPin1).not.toBeNull();
     expect(dbPin2).not.toBeNull();
+    expect(dbPin3).not.toBeNull();
   }, 15000);
 
   /**

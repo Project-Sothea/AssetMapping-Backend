@@ -155,17 +155,43 @@ export class IdempotencyService {
     } else {
       // Lock not acquired - another request is processing or lock service unavailable
       if (!this.isCircuitOpen()) {
-        // If Redis is available, this means another request is processing
+        // If Redis is available, another request is processing
+        // Wait briefly and check if result is now cached
+        logger.info('Lock not acquired, waiting for cached result...', { key });
+
+        // Poll for cached result (other request should complete soon)
+        for (let i = 0; i < 10; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 100)); // Wait 100ms
+          const cachedResult = await this.getIdempotentResult(key);
+          if (cachedResult) {
+            logger.info('Returning cached result after waiting', {
+              key,
+              waitTime: `${(i + 1) * 100}ms`,
+            });
+            return cachedResult as T;
+          }
+        }
+
+        // If still no result after 1 second, throw conflict error
         throw new ConflictError('Request is already being processed. Please try again later.');
       }
 
-      // 🚨 CRITICAL: Do NOT execute without lock - risk of duplicate operations
-      // Better to fail the request than create duplicate data
-      logger.error('Redis unavailable - cannot acquire idempotency lock', { key });
-      throw new Error(
-        'Service temporarily unavailable. Idempotency service (Redis) is down. ' +
-          'Please retry in a few moments.'
-      );
+      // ⚠️ DEGRADED MODE: Redis unavailable - proceed WITHOUT idempotency cache
+      // Database constraints (unique idempotencyKey) still prevent duplicates
+      // This allows field workers to sync even when Redis is down
+      logger.warn('⚠️ DEGRADED MODE: Redis unavailable - operating without idempotency cache', {
+        key,
+        warning: 'Database constraints will prevent duplicates',
+        impact: 'Performance degraded but operation continues',
+      });
+
+      // Execute handler without lock protection (degraded mode)
+      const result = await handler();
+
+      // Attempt to store result when Redis recovers (best effort)
+      await this.storeIdempotentResult(key, result);
+
+      return result;
     }
   }
 }
