@@ -19,7 +19,7 @@ export const config = {
   },
 
   kafka: {
-    brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
+    brokers: (process.env.KAFKA_BROKERS || 'localhost:29092').split(','),
     clientId: process.env.KAFKA_CLIENT_ID || 'assetmapping-backend',
     groupId: process.env.KAFKA_GROUP_ID || 'assetmapping-consumer-group',
   },
