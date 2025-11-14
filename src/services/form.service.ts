@@ -1,6 +1,6 @@
-// filepath: /Users/luciusyeojunjie/Desktop/repos/ProjectSothea/AssetMapping-Backend/src/services/form.service.ts
 import supabase from '../config/supabase';
 import { logger } from '../utils/logger';
+import { FormData } from '../types';
 
 export class FormService {
   static async getAllForms() {
@@ -66,5 +66,74 @@ export class FormService {
 
     logger.info('Successfully fetched form', { formId: id });
     return data;
+  }
+
+  /**
+   * Soft delete a form by setting deletedAt
+   */
+  static async deleteForm(formId: string): Promise<void> {
+    const { error } = await supabase
+      .from('forms')
+      .update({ deletedAt: new Date().toISOString() })
+      .eq('id', formId);
+
+    if (error) throw error;
+  }
+
+  /**
+   * Upsert a form with version and conflict resolution
+   */
+  static async upsertForm(data: FormData, version: number): Promise<FormData> {
+    const formData = this.prepareFormData(data, version);
+
+    const { data: result, error } = await supabase
+      .from('forms')
+      .upsert(formData, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (error) {
+      logger.error('Error upserting form', { error, data });
+      throw error;
+    }
+
+    return result as FormData;
+  }
+
+  /**
+   * Get current version of a form
+   */
+  static async getFormVersion(formId: string): Promise<number | null> {
+    const { data } = await supabase.from('forms').select('version').eq('id', formId).single();
+
+    return data?.version || null;
+  }
+
+  /**
+   * Get updatedAt timestamp for conflict resolution
+   */
+  static async getFormUpdatedAt(formId: string): Promise<string | null> {
+    const { data } = await supabase.from('forms').select('updatedAt').eq('id', formId).single();
+
+    return data?.updatedAt || null;
+  }
+
+  /**
+   * Prepare form data
+   */
+  private static prepareFormData(data: FormData, version: number): FormData {
+    const isCreate = !data.id;
+    const now = new Date().toISOString();
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { failureReason, lastSyncedAt, lastFailedSyncAt, ...cleanData } = data;
+
+    return {
+      ...cleanData,
+      version,
+      status: data.status || 'synced',
+      updatedAt: now,
+      ...(isCreate && { createdAt: now }),
+    } as FormData;
   }
 }

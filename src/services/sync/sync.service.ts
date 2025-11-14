@@ -44,9 +44,9 @@ export class SyncService {
     const { entityType, operation, payload } = request;
 
     if (entityType === 'pin') {
-      return pinOperations.syncPin(operation, payload as PinData);
+      return pinOperations.syncEntity(operation, payload as PinData);
     } else if (entityType === 'form') {
-      return formOperations.syncForm(operation, payload as FormData);
+      return formOperations.syncEntity(operation, payload as FormData);
     }
 
     throw new Error(`Unsupported entity type: ${entityType}`);

@@ -1,6 +1,7 @@
 // filepath: /Users/luciusyeojunjie/Desktop/repos/ProjectSothea/AssetMapping-Backend/src/services/pin.service.ts
 import supabase from '../config/supabase';
 import { logger } from '../utils/logger';
+import { PinData } from '../types'; // Add this import if not present
 
 export class PinService {
   static async getAllPins() {
@@ -66,5 +67,116 @@ export class PinService {
 
     logger.info('Successfully fetched pin', { pinId: id });
     return data;
+  }
+
+  /**
+   * Get images for a pin (for cleanup during delete)
+   */
+  static async getPinImages(pinId: string): Promise<string[]> {
+    const { data } = await supabase.from('pins').select('images').eq('id', pinId).single();
+
+    return data?.images ? JSON.parse(data.images) : [];
+  }
+
+  /**
+   * Soft delete a pin by setting deletedAt
+   */
+  static async deletePin(pinId: string): Promise<void> {
+    const { error } = await supabase
+      .from('pins')
+      .update({ deletedAt: new Date().toISOString() })
+      .eq('id', pinId);
+
+    if (error) throw error;
+  }
+
+  /**
+   * Upsert a pin with version and conflict resolution
+   */
+  static async upsertPin(data: PinData, version: number): Promise<PinData> {
+    const pinData = this.preparePinData(data, version);
+
+    const { data: result, error } = await supabase
+      .from('pins')
+      .upsert(pinData, { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (error) {
+      logger.error('Error upserting pin', { error, data });
+      throw error;
+    }
+
+    return result as PinData;
+  }
+
+  /**
+   * Get current version of a pin
+   */
+  static async getPinVersion(pinId: string): Promise<number | null> {
+    const { data } = await supabase.from('pins').select('version').eq('id', pinId).single();
+
+    return data?.version || null;
+  }
+
+  /**
+   * Get updatedAt timestamp for conflict resolution
+   */
+  static async getPinUpdatedAt(pinId: string): Promise<string | null> {
+    const { data } = await supabase.from('pins').select('updatedAt').eq('id', pinId).single();
+
+    return data?.updatedAt || null;
+  }
+
+  /**
+   * Get list of images to delete when a pin is updated
+   */
+  static async getImagesToDelete(pinId: string, newImages?: string | null): Promise<string[]> {
+    try {
+      const { data: currentPin } = await supabase
+        .from('pins')
+        .select('images')
+        .eq('id', pinId)
+        .single();
+
+      if (!currentPin || !currentPin.images) {
+        return [];
+      }
+
+      const oldImageUrls: string[] = JSON.parse(currentPin.images || '[]');
+      const newImageUrls: string[] = JSON.parse(newImages || '[]');
+
+      const deletedImageUrls = oldImageUrls.filter((url) => !newImageUrls.includes(url));
+
+      if (deletedImageUrls.length > 0) {
+        logger.info('Images to delete identified', {
+          pinId,
+          count: deletedImageUrls.length,
+        });
+      }
+
+      return deletedImageUrls;
+    } catch (error) {
+      logger.error('Error identifying images to delete', { error, pinId });
+      return [];
+    }
+  }
+
+  /**
+   * Prepare pin data (moved from PinOperations for reuse)
+   */
+  private static preparePinData(data: PinData, version: number): PinData {
+    const isCreate = !data.id;
+    const now = new Date().toISOString();
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { localImages, failureReason, lastSyncedAt, lastFailedSyncAt, ...cleanData } = data;
+
+    return {
+      ...cleanData,
+      version,
+      updatedAt: now,
+      ...(isCreate && { createdAt: now }),
+    } as PinData;
   }
 }
