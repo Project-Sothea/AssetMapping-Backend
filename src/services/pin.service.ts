@@ -1,4 +1,3 @@
-// filepath: /Users/luciusyeojunjie/Desktop/repos/ProjectSothea/AssetMapping-Backend/src/services/pin.service.ts
 import supabase from '../config/supabase';
 import { logger } from '../utils/logger';
 import { PinData } from '../types'; // Add this import if not present

@@ -1,4 +1,3 @@
-// filepath: /Users/luciusyeojunjie/Desktop/repos/ProjectSothea/AssetMapping-Backend/src/controllers/pin.controller.ts
 import { Request, Response, NextFunction } from 'express';
 import { PinService } from '../services/pin.service';
 import { logger } from '../utils/logger';
