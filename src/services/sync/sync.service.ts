@@ -1,8 +1,10 @@
-import { PinData, FormData, SyncItemRequest } from '../../types';
+import { z } from 'zod';
+import { PinData, FormData, SyncItemRequest, PinSelectSchema, FormSelectSchema } from '../../types';
 import { idempotencyService } from '../infrastructure/idempotency.service';
 import { pinOperations } from './operations/pin.operations';
 import { formOperations } from './operations/form.operations';
 import { eventPublisher } from './events/event-publisher';
+import { normalizePayload } from './normalisation.helpers';
 
 const OPERATION_TIMEOUT_MS = 25000; // 25s (less than client's 30s timeout)
 
@@ -43,10 +45,22 @@ export class SyncService {
   ): Promise<PinData | FormData | { id: string; deleted: boolean }> {
     const { entityType, operation, payload } = request;
 
+    // Determine the schema and normalize based on it
+    let schema: z.ZodSchema;
     if (entityType === 'pin') {
-      return pinOperations.syncEntity(operation, payload as PinData);
+      schema = PinSelectSchema;
     } else if (entityType === 'form') {
-      return formOperations.syncEntity(operation, payload as FormData);
+      schema = FormSelectSchema;
+    } else {
+      throw new Error(`Unsupported entity type: ${entityType}`);
+    }
+
+    const normalizedPayload = normalizePayload(payload, schema);
+
+    if (entityType === 'pin') {
+      return pinOperations.syncEntity(operation, normalizedPayload as PinData);
+    } else if (entityType === 'form') {
+      return formOperations.syncEntity(operation, normalizedPayload as FormData);
     }
 
     throw new Error(`Unsupported entity type: ${entityType}`);
