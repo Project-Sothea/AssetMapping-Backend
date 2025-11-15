@@ -1,18 +1,18 @@
-import { PinData } from '../../../types';
+import { EntityType, PinData } from '../../../types';
 import { imageService } from '../../image.service';
 import { PinService } from '../../pin.service';
 import { logger } from '../../../utils/logger';
-import { BaseOperations, EntityType } from './base.operations';
+import { BaseOperations } from './base.operations';
 
 /**
  * Pin Operations Service
  */
 export class PinOperations extends BaseOperations<PinData> {
   getEntityType(): EntityType {
-    return 'pins';
+    return 'pin';
   }
 
-  async getUpdatedAt(id: string): Promise<string | null> {
+  async getUpdatedAt(id: string): Promise<Date | null> {
     return PinService.getPinUpdatedAt(id);
   }
 

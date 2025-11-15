@@ -1,23 +1,25 @@
-import supabase from '../config/supabase';
+import { db } from '../db'; // Import the Drizzle db instance
+import { pins } from '../db/schema'; // Import the pins table schema
+import { eq, isNull, desc, gte, and } from 'drizzle-orm'; // Import Drizzle query helpers
 import { logger } from '../utils/logger';
-import { PinData } from '../types'; // Add this import if not present
+import { PinData } from '../types';
 
 export class PinService {
   static async getAllPins() {
     logger.info('Fetching all pins');
-    const { data, error } = await supabase
-      .from('pins')
-      .select('*')
-      .is('deletedAt', null)
-      .order('createdAt', { ascending: false });
+    try {
+      const data = await db
+        .select()
+        .from(pins)
+        .where(isNull(pins.deletedAt))
+        .orderBy(desc(pins.createdAt));
 
-    if (error) {
+      logger.info('Successfully fetched pins', { count: data?.length || 0 });
+      return data || [];
+    } catch (error) {
       logger.error('Error fetching pins', { error });
       throw error;
     }
-
-    logger.info('Successfully fetched pins', { count: data?.length || 0 });
-    return data || [];
   }
 
   static async getPinsSince(timestamp: number) {
@@ -27,66 +29,74 @@ export class PinService {
       throw new Error('Invalid timestamp');
     }
 
-    const { data, error } = await supabase
-      .from('pins')
-      .select('*')
-      .is('deletedAt', null)
-      .gte('updatedAt', date.toISOString())
-      .order('updatedAt', { ascending: true });
+    try {
+      const data = await db
+        .select()
+        .from(pins)
+        .where(and(isNull(pins.deletedAt), gte(pins.updatedAt, date)))
+        .orderBy(pins.updatedAt);
 
-    if (error) {
+      logger.info('Successfully fetched pins since timestamp', {
+        timestamp,
+        count: data?.length || 0,
+      });
+      return data || [];
+    } catch (error) {
       logger.error('Error fetching pins since timestamp', { error, timestamp });
       throw error;
     }
-
-    logger.info('Successfully fetched pins since timestamp', {
-      timestamp,
-      count: data?.length || 0,
-    });
-    return data || [];
   }
 
   static async getPinById(id: string) {
     logger.info('Fetching single pin', { pinId: id });
-    const { data, error } = await supabase
-      .from('pins')
-      .select('*')
-      .eq('id', id)
-      .is('deletedAt', null)
-      .single();
+    try {
+      const data = await db
+        .select()
+        .from(pins)
+        .where(and(eq(pins.id, id), isNull(pins.deletedAt)))
+        .limit(1);
 
-    if (error) {
-      if (error.code === 'PGRST116') {
+      if (!data || data.length === 0) {
         logger.warn('Pin not found', { pinId: id });
         throw new Error('Pin not found');
       }
+
+      logger.info('Successfully fetched pin', { pinId: id });
+      return data[0];
+    } catch (error) {
       logger.error('Error fetching pin', { error, pinId: id });
       throw error;
     }
-
-    logger.info('Successfully fetched pin', { pinId: id });
-    return data;
   }
 
   /**
    * Get images for a pin (for cleanup during delete)
    */
   static async getPinImages(pinId: string): Promise<string[]> {
-    const { data } = await supabase.from('pins').select('images').eq('id', pinId).single();
+    try {
+      const data = await db
+        .select({ images: pins.images })
+        .from(pins)
+        .where(eq(pins.id, pinId))
+        .limit(1);
 
-    return data?.images ? JSON.parse(data.images) : [];
+      return data?.[0]?.images ? JSON.parse(data[0].images) : [];
+    } catch (error) {
+      logger.error('Error fetching pin images', { error, pinId });
+      throw error;
+    }
   }
 
   /**
    * Soft delete a pin by setting deletedAt
    */
   static async deletePin(pinId: string): Promise<void> {
-    const { error } = await supabase
-      .from('pins')
-      .update({ deletedAt: new Date().toISOString() })
-      .eq('id', pinId);
-
-    if (error) throw error;
+    try {
+      await db.update(pins).set({ deletedAt: new Date() }).where(eq(pins.id, pinId));
+    } catch (error) {
+      logger.error('Error deleting pin', { error, pinId });
+      throw error;
+    }
   }
 
   /**
@@ -95,36 +105,57 @@ export class PinService {
   static async upsertPin(data: PinData, version: number): Promise<PinData> {
     const pinData = this.preparePinData(data, version);
 
-    const { data: result, error } = await supabase
-      .from('pins')
-      .upsert(pinData, { onConflict: 'id' })
-      .select()
-      .single();
+    try {
+      const result = await db
+        .insert(pins)
+        .values(pinData)
+        .onConflictDoUpdate({
+          target: pins.id,
+          set: pinData,
+        })
+        .returning();
 
-    if (error) {
+      return result[0] as PinData;
+    } catch (error) {
       logger.error('Error upserting pin', { error, data });
       throw error;
     }
-
-    return result as PinData;
   }
 
   /**
    * Get current version of a pin
    */
   static async getPinVersion(pinId: string): Promise<number | null> {
-    const { data } = await supabase.from('pins').select('version').eq('id', pinId).single();
+    try {
+      const data = await db
+        .select({ version: pins.version })
+        .from(pins)
+        .where(eq(pins.id, pinId))
+        .limit(1);
 
-    return data?.version || null;
+      return data?.[0]?.version || null;
+    } catch (error) {
+      logger.error('Error fetching pin version', { error, pinId });
+      throw error;
+    }
   }
 
   /**
    * Get updatedAt timestamp for conflict resolution
    */
-  static async getPinUpdatedAt(pinId: string): Promise<string | null> {
-    const { data } = await supabase.from('pins').select('updatedAt').eq('id', pinId).single();
+  static async getPinUpdatedAt(pinId: string): Promise<Date | null> {
+    try {
+      const data = await db
+        .select({ updatedAt: pins.updatedAt })
+        .from(pins)
+        .where(eq(pins.id, pinId))
+        .limit(1);
 
-    return data?.updatedAt || null;
+      return data?.[0]?.updatedAt || null;
+    } catch (error) {
+      logger.error('Error fetching pin updatedAt', { error, pinId });
+      throw error;
+    }
   }
 
   /**
@@ -132,17 +163,17 @@ export class PinService {
    */
   static async getImagesToDelete(pinId: string, newImages?: string | null): Promise<string[]> {
     try {
-      const { data: currentPin } = await supabase
-        .from('pins')
-        .select('images')
-        .eq('id', pinId)
-        .single();
+      const data = await db
+        .select({ images: pins.images })
+        .from(pins)
+        .where(eq(pins.id, pinId))
+        .limit(1);
 
-      if (!currentPin || !currentPin.images) {
+      if (!data || !data[0]?.images) {
         return [];
       }
 
-      const oldImageUrls: string[] = JSON.parse(currentPin.images || '[]');
+      const oldImageUrls: string[] = JSON.parse(data[0].images || '[]');
       const newImageUrls: string[] = JSON.parse(newImages || '[]');
 
       const deletedImageUrls = oldImageUrls.filter((url) => !newImageUrls.includes(url));
@@ -166,7 +197,7 @@ export class PinService {
    */
   private static preparePinData(data: PinData, version: number): PinData {
     const isCreate = !data.id;
-    const now = new Date().toISOString();
+    const now = new Date();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { localImages, failureReason, lastSyncedAt, lastFailedSyncAt, ...cleanData } = data;

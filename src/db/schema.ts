@@ -5,8 +5,8 @@ export const pins = pgTable('pins', {
   id: uuid('id')
     .primaryKey()
     .default(sql`uuid_generate_v4()`),
-  createdAt: timestamp('createdAt', { mode: 'date' }).default(sql`NOW()`),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).default(sql`NOW()`),
+  createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).default(sql`NOW()`),
+  updatedAt: timestamp('updatedAt', { mode: 'date', withTimezone: true }).default(sql`NOW()`),
   lat: decimal('lat', { precision: 10, scale: 8 }).notNull(),
   lng: decimal('lng', { precision: 11, scale: 8 }).notNull(),
   type: varchar('type', { length: 50 }).notNull().default('normal'),
@@ -14,11 +14,11 @@ export const pins = pgTable('pins', {
   address: text('address'),
   cityVillage: varchar('cityVillage', { length: 255 }),
   description: text('description'),
-  deletedAt: timestamp('deletedAt', { mode: 'date' }),
+  deletedAt: timestamp('deletedAt', { mode: 'date', withTimezone: true }),
   failureReason: text('failureReason'),
   status: varchar('status', { length: 50 }),
-  lastSyncedAt: timestamp('lastSyncedAt', { mode: 'date' }),
-  lastFailedSyncAt: timestamp('lastFailedSyncAt', { mode: 'date' }),
+  lastSyncedAt: timestamp('lastSyncedAt', { mode: 'date', withTimezone: true }),
+  lastFailedSyncAt: timestamp('lastFailedSyncAt', { mode: 'date', withTimezone: true }),
   localImages: text('localImages').default('[]'),
   images: text('images').default('[]'),
   version: integer('version').default(1),
@@ -28,18 +28,18 @@ export const forms = pgTable('forms', {
   id: uuid('id')
     .primaryKey()
     .default(sql`uuid_generate_v4()`),
-  createdAt: timestamp('createdAt', { mode: 'date' }).default(sql`NOW()`),
-  updatedAt: timestamp('updatedAt', { mode: 'date' }).default(sql`NOW()`),
+  createdAt: timestamp('createdAt', { mode: 'date', withTimezone: true }).default(sql`NOW()`),
+  updatedAt: timestamp('updatedAt', { mode: 'date', withTimezone: true }).default(sql`NOW()`),
   pinId: uuid('pinId')
     .notNull()
     .references(() => pins.id),
-  deletedAt: timestamp('deletedAt', { mode: 'date' }),
+  deletedAt: timestamp('deletedAt', { mode: 'date', withTimezone: true }),
   village: varchar('village', { length: 255 }),
   villageId: varchar('villageId', { length: 255 }),
   failureReason: text('failureReason'),
   status: varchar('status', { length: 50 }),
-  lastSyncedAt: timestamp('lastSyncedAt', { mode: 'date' }),
-  lastFailedSyncAt: timestamp('lastFailedSyncAt', { mode: 'date' }),
+  lastSyncedAt: timestamp('lastSyncedAt', { mode: 'date', withTimezone: true }),
+  lastFailedSyncAt: timestamp('lastFailedSyncAt', { mode: 'date', withTimezone: true }),
   version: integer('version').default(1),
   name: varchar('name', { length: 255 }),
 
