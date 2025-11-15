@@ -17,7 +17,7 @@ export const SyncItemRequestSchema = z.object({
   idempotencyKey: z.string().min(1),
   entityType: z.enum(['pin', 'form']),
   operation: z.enum(['create', 'update', 'delete']),
-  payload: z.record(z.any()),
+  payload: z.record(z.string(), z.any()),
   timestamp: z.string().optional(),
   deviceId: z.string().optional(),
 });

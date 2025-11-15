@@ -58,12 +58,13 @@ export abstract class BaseOperations<T extends BaseEntity> implements IOperation
 
     await this.checkLastWriteWins(data, currentVersion, serverUpdatedAt);
 
+    const clientTimeIso = (data.updatedAt || new Date(0)).toISOString();
     logger.info(`Accepting newer update despite version conflict for ${this.getEntityType()}`, {
       id: data.id,
       clientVersion: data.version,
       serverVersion: currentVersion,
-      clientTime: (data.updatedAt || new Date(0)).toISOString(),
-      serverTime: new Date(new Date(serverUpdatedAt).getTime()).toISOString(),
+      clientTime: clientTimeIso,
+      serverTime: serverUpdatedAt.toISOString(),
     });
   }
 
@@ -88,7 +89,8 @@ export abstract class BaseOperations<T extends BaseEntity> implements IOperation
     currentVersion: number,
     serverUpdatedAt: Date
   ): Promise<void> {
-    const clientTime = new Date(data.updatedAt || 0).getTime();
+    const clientDate = data.updatedAt || new Date(0);
+    const clientTime = clientDate.getTime();
     const serverTime = serverUpdatedAt.getTime();
 
     if (serverTime >= clientTime) {
@@ -96,7 +98,7 @@ export abstract class BaseOperations<T extends BaseEntity> implements IOperation
         id: data.id,
         clientVersion: data.version,
         serverVersion: currentVersion,
-        clientTime: new Date(clientTime).toISOString(),
+        clientTime: clientDate.toISOString(),
         serverTime: serverUpdatedAt.toISOString(),
       });
       throw new Error(
