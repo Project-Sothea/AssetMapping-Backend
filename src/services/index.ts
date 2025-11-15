@@ -20,8 +20,6 @@ export { syncService } from './sync/sync.service';
 export { pinOperations } from './sync/operations/pin.operations';
 export { formOperations } from './sync/operations/form.operations';
 export { eventPublisher } from './sync/events/event-publisher';
-export { eventBuilder } from './sync/events/event-builder';
-export { createDomainEvent } from './sync/events/event-factory';
 
 // Specialized publishers
 export { syncEventPublisher } from './sync/publishers/sync-event.publisher';
