@@ -1,16 +1,16 @@
-import { FormData } from '../../../types';
+import { EntityType, FormData } from '../../../types';
 import { FormService } from '../../form.service';
-import { BaseOperations, EntityType } from './base.operations';
+import { BaseOperations } from './base.operations';
 
 /**
  * Form Operations Service
  */
 export class FormOperations extends BaseOperations<FormData> {
   getEntityType(): EntityType {
-    return 'forms';
+    return 'form';
   }
 
-  async getUpdatedAt(id: string): Promise<string | null> {
+  async getUpdatedAt(id: string): Promise<Date | null> {
     return FormService.getFormUpdatedAt(id);
   }
 
