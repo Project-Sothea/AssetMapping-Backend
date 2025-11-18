@@ -8,7 +8,6 @@ Before running tests, ensure you have:
 
 1. **Backend running** on `http://localhost:3000`
 2. **Redis running** on default port (6379)
-3. **Supabase configured** with proper environment variables in `.env`
 
 ## Quick Start
 
@@ -141,15 +140,6 @@ npm run dev
 docker-compose up -d redis
 # or
 redis-server
-```
-
-### Database errors
-
-Check your `.env` file has valid Supabase credentials:
-
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-service-role-key
 ```
 
 ### Clean up test data

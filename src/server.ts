@@ -11,7 +11,6 @@ import { logger } from './utils/logger';
 
 // Import routes
 import syncRoutes from './routes/sync.routes';
-import imageRoutes from './routes/image.routes';
 import pinRoutes from './routes/pin.routes';
 import formRoutes from './routes/form.routes';
 import notificationRoutes, { initializeWebSocketServer } from './routes/notification.routes';
@@ -34,6 +33,9 @@ app.use(
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Static file serving for uploaded images
+app.use('/uploads', express.static('uploads'));
 
 // Request logging
 app.use(requestLogger);
@@ -64,7 +66,6 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // API routes
 app.use('/api/sync', syncRoutes);
-app.use('/api/images', imageRoutes);
 app.use('/api/pins', pinRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/notifications', notificationRoutes);

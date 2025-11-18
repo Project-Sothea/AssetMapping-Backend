@@ -35,30 +35,6 @@ export type PinInsert = typeof pins.$inferInsert;
 export type FormData = typeof forms.$inferSelect;
 export type FormInsert = typeof forms.$inferInsert;
 
-// Image types
-export interface ImageUploadRequest {
-  filename: string;
-  contentType: string;
-  sizeBytes: number;
-  entityType: EntityType;
-  entityId: string;
-}
-
-export const ImageUploadRequestSchema = z.object({
-  filename: z.string().min(1),
-  contentType: z.string().regex(/^image\/(jpeg|jpg|png|webp)$/),
-  sizeBytes: z.number().positive(),
-  entityType: z.enum(['pin', 'form']),
-  entityId: z.string().min(1),
-});
-
-export interface SignedUrlResponse {
-  uploadUrl: string;
-  publicUrl: string;
-  token: string;
-  expiresAt: string;
-}
-
 // Event types for Kafka
 export interface SyncEvent {
   eventId: string;

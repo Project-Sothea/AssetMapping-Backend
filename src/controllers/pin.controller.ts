@@ -34,7 +34,6 @@ export class PinController {
         return;
       }
       if (error && typeof error === 'object' && 'message' in error) {
-        logger.error('Supabase error in getPinsSince', { error });
         res.status(500).json({
           success: false,
           error: 'Database error occurred',

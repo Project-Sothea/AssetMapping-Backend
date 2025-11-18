@@ -6,11 +6,6 @@ export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
 
-  supabase: {
-    url: process.env.SUPABASE_URL!,
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  },
-
   redis: {
     host: process.env.REDIS_HOST || 'localhost',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
@@ -43,7 +38,7 @@ export const config = {
 };
 
 // Validate required environment variables
-const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
+const requiredEnvVars = ['DATABASE_URL'];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {

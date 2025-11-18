@@ -1,80 +1,46 @@
-import supabase from '../config/supabase';
-import { config } from '../config';
-import { ImageUploadRequest, SignedUrlResponse } from '../types';
+import { unlink } from 'fs/promises';
+import { join } from 'path';
 import { logger } from '../utils/logger';
-import { v4 as uuidv4 } from 'uuid';
 
-const BUCKET_NAME = 'images';
+const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
 export class ImageService {
   /**
-   * Generate a signed URL for image upload
-   */
-  async getSignedUploadUrl(request: ImageUploadRequest): Promise<SignedUrlResponse> {
-    logger.info('Generating signed upload URL', {
-      filename: request.filename,
-      entityType: request.entityType,
-      entityId: request.entityId,
-    });
-
-    // Validate file size
-    const maxSizeBytes = config.images.maxSizeMB * 1024 * 1024;
-    if (request.sizeBytes > maxSizeBytes) {
-      throw new Error(`File size ${request.sizeBytes} bytes exceeds maximum ${maxSizeBytes} bytes`);
-    }
-
-    // Generate unique filename
-    const extension = request.filename.split('.').pop();
-    const uniqueFilename = `${uuidv4()}.${extension}`;
-    const path = `${request.entityType}/${request.entityId}/${uniqueFilename}`;
-
-    // Generate signed URL (valid for 1 hour)
-    const { data, error } = await supabase.storage.from(BUCKET_NAME).createSignedUploadUrl(path);
-
-    if (error || !data) {
-      logger.error('Error creating signed upload URL', { error, path });
-      throw error || new Error('Failed to create signed upload URL');
-    }
-
-    // Get public URL
-    const { data: publicUrlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(path);
-
-    const response: SignedUrlResponse = {
-      uploadUrl: data.signedUrl,
-      publicUrl: publicUrlData.publicUrl,
-      token: data.token,
-      expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-    };
-
-    logger.info('Signed upload URL generated', { path });
-    return response;
-  }
-
-  /**
-   * Delete an image from Supabase storage by its public URL
+   * Delete an image from local filesystem by relative path or URL
    * Throws error if deletion fails (for proper error handling in operations)
    */
-  async deleteImageByUrl(publicUrl: string): Promise<void> {
+  async deleteImageByUrl(pathOrUrl: string): Promise<void> {
     try {
-      // Extract the path from the public URL
-      // Example URL: https://abc.supabase.co/storage/v1/object/public/images/pin/uuid/filename.jpg
-      const urlParts = publicUrl.split('/storage/v1/object/public/images/');
-      if (urlParts.length < 2) {
-        logger.warn('Invalid image URL format, skipping deletion', { publicUrl });
-        return;
+      // Handle both relative paths and full URLs for backwards compatibility
+      let relativePath: string;
+      
+      if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+        // Full URL: extract path after /uploads/
+        const urlParts = pathOrUrl.split('/uploads/');
+        if (urlParts.length < 2) {
+          logger.warn('Invalid image URL format, skipping deletion', { url: pathOrUrl });
+          return;
+        }
+        relativePath = urlParts[1];
+      } else {
+        // Already a relative path: "pin/123/abc.jpg"
+        relativePath = pathOrUrl;
       }
 
-      const path = urlParts[1];
-      logger.info('Deleting image from storage', { path });
+      const filePath = join(UPLOADS_DIR, relativePath);
+      
+      logger.info('Deleting image from filesystem', { path: filePath });
 
-      const { error } = await supabase.storage.from(BUCKET_NAME).remove([path]);
-
-      if (error) {
-        logger.error('Error deleting image from storage', { error, path });
-        throw new Error(`Failed to delete image: ${error.message}`);
+      try {
+        await unlink(filePath);
+        logger.info('Image deleted successfully', { path: filePath });
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          logger.warn('Image file not found, skipping deletion', { path: filePath });
+          return;
+        }
+        throw error;
       }
-
-      logger.info('Image deleted successfully', { path });
     } catch (error) {
       logger.error('Exception while deleting image', { error, publicUrl });
       throw error;
@@ -82,7 +48,7 @@ export class ImageService {
   }
 
   /**
-   * Delete multiple images from Supabase storage
+   * Delete multiple images from local filesystem
    * Throws error if any deletion fails
    */
   async deleteImages(publicUrls: string[]): Promise<void> {

@@ -2,10 +2,8 @@
  * Database Schema Types
  *
  * This file contains the complete database schema definitions for all tables.
- * These types represent the ACTUAL structure of tables in Supabase PostgreSQL.
  *
  * Last Verified: November 5, 2025
- * Source: Direct inspection of Supabase production database
  *
  * @see /docs/DATABASE_SCHEMA.md for detailed documentation
  */

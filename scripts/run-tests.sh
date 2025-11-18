@@ -63,17 +63,6 @@ else
     fi
 fi
 
-# Check database connection
-echo "Checking database connection..."
-if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-    echo -e "${GREEN}✓ Database configuration found${NC}"
-elif [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_KEY" ]; then
-    echo -e "${GREEN}✓ Database configuration found${NC}"
-else
-    echo -e "${RED}✗ Database configuration missing${NC}"
-    exit 1
-fi
-
 echo ""
 echo "=============================================="
 echo "Running system tests..."

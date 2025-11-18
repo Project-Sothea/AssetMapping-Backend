@@ -34,7 +34,6 @@ export class FormController {
         return;
       }
       if (error && typeof error === 'object' && 'message' in error) {
-        logger.error('Supabase error in getFormsSince', { error });
         res.status(500).json({
           success: false,
           error: 'Database error occurred',
