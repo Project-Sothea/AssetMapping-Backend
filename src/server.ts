@@ -48,7 +48,7 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   // Skip rate limiting in development/test to avoid blocking during testing
-  skip: (_req) => config.nodeEnv === 'development' || config.nodeEnv === 'test',
+  skip: () => config.nodeEnv === 'development' || config.nodeEnv === 'test',
 });
 app.use('/api/', limiter);
 

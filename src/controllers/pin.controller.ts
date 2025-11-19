@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { PinService } from '../services/pin.service';
-import { logger } from '../utils/logger';
 
 export class PinController {
   static async getAllPins(_req: Request, res: Response, next: NextFunction) {

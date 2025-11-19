@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { FormService } from '../services/form.service';
-import { logger } from '../utils/logger';
 
 export class FormController {
   static async getAllForms(_req: Request, res: Response, next: NextFunction) {

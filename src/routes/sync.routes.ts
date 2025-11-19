@@ -11,7 +11,7 @@ const router = Router();
 
 // Configure multer for image uploads
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
+  destination: async (req, _, cb) => {
     // Parse the 'data' field to get entityType and entityId
     const data = JSON.parse(req.body.data || '{}');
     const entityType = data.entityType || 'unknown';
@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
     await mkdir(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
-  filename: (req, file, cb) => {
+  filename: (_, file, cb) => {
     // Use the original filename, which should be the UUID from the frontend
     cb(null, file.originalname);
   },
@@ -33,7 +33,7 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB per file
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);

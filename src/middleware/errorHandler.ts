@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { AppError } from '../types';
 import { logger } from '../utils/logger';
 
@@ -6,7 +6,6 @@ export const errorHandler = (
   err: Error | AppError,
   req: Request,
   res: Response,
-  _next: NextFunction
 ) => {
   logger.error('Error occurred:', {
     message: err.message,
