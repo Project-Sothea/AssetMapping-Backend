@@ -1,5 +1,5 @@
 {
-  "id": "f15f0733-3f77-44d6-88e5-ccb1410689e2",
+  "id": "b61d8ef9-1914-4f9e-bea3-80256130b2a4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -86,7 +86,7 @@
         },
         "canAttendHealthScreening": {
           "name": "canAttendHealthScreening",
-          "type": "integer",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": false
         },

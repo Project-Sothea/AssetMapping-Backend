@@ -11,7 +11,7 @@ CREATE TABLE "forms" (
 	"gender" text,
 	"age" integer,
 	"village" text,
-	"canAttendHealthScreening" integer,
+	"canAttendHealthScreening" boolean,
 	"longTermConditions" text,
 	"otherLongTermConditions" text,
 	"managementMethods" text,

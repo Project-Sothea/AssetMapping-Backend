@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, uuid, text, varchar, decimal, integer, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, boolean, varchar, decimal, integer, timestamp } from 'drizzle-orm/pg-core';
 
 export const pins = pgTable('pins', {
   id: uuid().primaryKey().default(sql`uuid_generate_v4()`),
@@ -37,7 +37,7 @@ export const forms = pgTable('forms', {
   gender: text(),
   age: integer(),
   village: text(),
-  canAttendHealthScreening: integer(),
+  canAttendHealthScreening: boolean(),
 
   // Health
   longTermConditions: text(),
