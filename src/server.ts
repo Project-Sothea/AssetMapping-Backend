@@ -1,5 +1,4 @@
 import express, { Application, Request, Response } from 'express';
-import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
@@ -21,14 +20,6 @@ const app: Application = express();
 
 // Security
 app.use(helmet());
-
-// CORS
-app.use(
-  cors({
-    origin: config.cors.origins,
-    credentials: true,
-  })
-);
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
