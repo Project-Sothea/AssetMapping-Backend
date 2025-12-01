@@ -31,7 +31,6 @@ export const forms = pgTable('forms', {
   pinId: uuid().references(() => pins.id),
 
   // General
-  formName: text(),
   villageId: text(),
   name: text(),
   gender: text(),

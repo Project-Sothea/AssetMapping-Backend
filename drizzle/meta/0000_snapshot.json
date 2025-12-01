@@ -1,5 +1,5 @@
 {
-  "id": "b61d8ef9-1914-4f9e-bea3-80256130b2a4",
+  "id": "42ac4e9a-e11f-40cb-9250-95501b466e5a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -45,12 +45,6 @@
         "pinId": {
           "name": "pinId",
           "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "formName": {
-          "name": "formName",
-          "type": "text",
           "primaryKey": false,
           "notNull": false
         },

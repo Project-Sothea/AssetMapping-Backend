@@ -5,7 +5,6 @@ CREATE TABLE "forms" (
 	"deletedAt" timestamp with time zone,
 	"version" integer DEFAULT 1 NOT NULL,
 	"pinId" uuid,
-	"formName" text,
 	"villageId" text,
 	"name" text,
 	"gender" text,
