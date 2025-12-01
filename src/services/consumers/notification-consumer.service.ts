@@ -1,5 +1,4 @@
-import { Kafka, Consumer, EachMessagePayload } from 'kafkajs';
-import { config } from '../../config';
+import { EachMessagePayload } from 'kafkajs';
 import { logger } from '../../utils/logger';
 import { DomainEvent } from '../../types/events';
 import { SyncEvent } from '../../types';
@@ -7,6 +6,7 @@ import { WebSocket } from 'ws';
 import { safeJsonParse } from '../../utils/parsing';
 import { webSocketManagerService } from '../notifications/websocket-manager.service';
 import { notificationRouterService } from '../notifications/notification-router.service';
+import { getKafkaConsumer } from '../../config/kafka';
 
 /**
  * Notification Consumer Service
@@ -18,20 +18,9 @@ import { notificationRouterService } from '../notifications/notification-router.
  * - Coordinate with NotificationRouter for event transformation
  */
 class NotificationConsumerService {
-  private kafka: Kafka;
-  private consumer: Consumer | null = null;
+  private consumer: import('kafkajs').Consumer | null = null;
   private isRunning: boolean = false;
 
-  constructor() {
-    this.kafka = new Kafka({
-      clientId: 'assetmapping-notifications',
-      brokers: config.kafka.brokers,
-      retry: {
-        initialRetryTime: 100,
-        retries: 8,
-      },
-    });
-  }
 
   /**
    * Start the notification consumer
@@ -43,18 +32,12 @@ class NotificationConsumerService {
     }
 
     try {
-      this.consumer = this.kafka.consumer({
-        groupId: 'notification-service',
-        sessionTimeout: 30000,
-        heartbeatInterval: 3000,
-      });
-
-      await this.consumer.connect();
+      this.consumer = await getKafkaConsumer();
       logger.info('Notification consumer connected');
 
-      // Subscribe to all event topics
+      // Subscribe to required event topics
       await this.consumer.subscribe({
-        topics: ['sync.events', 'pin.events', 'form.events', 'image.events'],
+        topics: ['sync.events'],
         fromBeginning: false, // Only process new events
       });
 
@@ -85,11 +68,6 @@ class NotificationConsumerService {
 
     // Close all WebSocket connections via manager
     webSocketManagerService.disconnectAll();
-
-    if (this.consumer) {
-      await this.consumer.disconnect();
-      logger.info('Notification consumer disconnected');
-    }
   }
 
   /**

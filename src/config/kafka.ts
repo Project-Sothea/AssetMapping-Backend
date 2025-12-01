@@ -62,10 +62,6 @@ export const disconnectKafka = async () => {
 // Kafka Topics
 export const KAFKA_TOPICS = {
   SYNC_EVENTS: 'sync.events',
-  PIN_EVENTS: 'pin.events',
-  FORM_EVENTS: 'form.events',
-  IMAGE_EVENTS: 'image.events',
-  AUDIT_LOGS: 'audit.logs',
 } as const;
 
 export { kafka };

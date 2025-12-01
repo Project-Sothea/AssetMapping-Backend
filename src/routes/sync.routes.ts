@@ -1,11 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { syncService } from '../services/sync';
+import { syncService } from '../services/sync/sync.service';
 import { SyncItemRequestSchema, SyncItemRequest } from '../types';
 import { logger } from '../utils/logger';
 import multer from 'multer';
 import { join } from 'path';
 import { mkdir } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
+import { config } from '../config';
 
 const router = Router();
 
@@ -31,7 +32,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB per file
+    fileSize: config.images.maxSizeMB * 1024 * 1024,
   },
   fileFilter: (_, file, cb) => {
     const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];

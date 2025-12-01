@@ -3,7 +3,7 @@ import { PinData, FormData, SyncItemRequest, PinSelectSchema, FormSelectSchema }
 import { idempotencyService } from '../infrastructure/idempotency.service';
 import { pinOperations } from './operations/pin.operations';
 import { formOperations } from './operations/form.operations';
-import { eventPublisher } from './events/event-publisher';
+import { syncEventPublisher } from './publishers/sync-event.publisher';
 import { normalizePayload } from './normalisation.helpers';
 
 const OPERATION_TIMEOUT_MS = 25000; // 25s (less than client's 30s timeout)
@@ -19,7 +19,7 @@ export class SyncService {
     return this.withTimeout(
       idempotencyService.processWithIdempotency(request.idempotencyKey, async () => {
         const result = await this.executeSyncOperation(request, files);
-        await eventPublisher.publishEvents(request, result);
+        await syncEventPublisher.publish(request, result);
         return result;
       }),
       OPERATION_TIMEOUT_MS

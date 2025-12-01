@@ -21,7 +21,6 @@ export const config = {
 
   images: {
     maxSizeMB: parseInt(process.env.MAX_IMAGE_SIZE_MB || '10', 10),
-    quality: parseInt(process.env.IMAGE_QUALITY || '80', 10),
   },
 
   rateLimit: {

@@ -81,11 +81,6 @@ const startServer = async () => {
     await getKafkaProducer();
     logger.info('✓ Kafka producer connected');
 
-    // Start Kafka Producer
-    const { kafkaProducerService } = await import('./services/messaging/kafka-producer.service');
-    await kafkaProducerService.connect();
-    logger.info('✓ Kafka producer service connected');
-
     // Start Notification Consumer (real-time notifications)
     const { notificationConsumerService } = await import(
       './services/consumers/notification-consumer.service'
@@ -114,15 +109,9 @@ const startServer = async () => {
           const { notificationConsumerService } = await import(
             './services/consumers/notification-consumer.service'
           );
-          const { kafkaProducerService } = await import(
-            './services/messaging/kafka-producer.service'
-          );
 
           await notificationConsumerService.stop();
           logger.info('✓ Notification consumer stopped');
-
-          await kafkaProducerService.disconnect();
-          logger.info('✓ Kafka producer service disconnected');
 
           // Disconnect infrastructure
           const { disconnectRedis } = await import('./config/redis');
