@@ -36,7 +36,7 @@ export class PinOperations extends BaseOperations<PinData> {
           pinId: result.id,
           count: imagesToDelete.length,
         });
-        await imageService.deleteImages(imagesToDelete);
+        await imageService.deleteImages(data.id, imagesToDelete);
         logger.info('Image cleanup completed successfully', {
           pinId: result.id,
           deletedCount: imagesToDelete.length,
@@ -63,7 +63,7 @@ export class PinOperations extends BaseOperations<PinData> {
           pinId: id,
           count: imageUrls.length,
         });
-        await imageService.deleteImages(imageUrls);
+        await imageService.deleteImages(id, imageUrls);
         logger.info('Image cleanup completed successfully', {
           pinId: id,
           deletedCount: imageUrls.length,

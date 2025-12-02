@@ -1,5 +1,5 @@
 {
-  "id": "42ac4e9a-e11f-40cb-9250-95501b466e5a",
+  "id": "84780346-05f6-4104-9990-dbd8a89426fa",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -594,13 +594,6 @@
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
-        },
-        "localImages": {
-          "name": "localImages",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'[]'"
         },
         "images": {
           "name": "images",

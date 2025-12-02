@@ -98,7 +98,7 @@ npm test
 1. **Start required services:**
 
    ```bash
-   # Start Redis and Kafka
+   # Start Redis
    docker-compose up -d
 
    # Start backend

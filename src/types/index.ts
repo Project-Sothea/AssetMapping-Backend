@@ -35,7 +35,6 @@ export type PinInsert = typeof pins.$inferInsert;
 export type FormData = typeof forms.$inferSelect;
 export type FormInsert = typeof forms.$inferInsert;
 
-// Event types for Kafka
 export interface SyncEvent {
   eventId: string;
   eventType: 'sync.item.created' | 'sync.item.updated' | 'sync.item.deleted';

@@ -34,8 +34,8 @@ fi
 echo -e "${GREEN}✓ Docker is running${NC}"
 echo ""
 
-# Start Redis and Kafka
-echo "Starting Redis and Kafka..."
+# Start Redis
+echo "Starting Redis..."
 docker-compose up -d
 
 # Wait for services to be healthy
@@ -47,14 +47,6 @@ if docker exec assetmapping-redis redis-cli ping > /dev/null 2>&1; then
     echo -e "${GREEN}✓ Redis is ready${NC}"
 else
     echo -e "${RED}❌ Redis failed to start${NC}"
-    exit 1
-fi
-
-# Check Kafka (simplified check)
-if docker ps | grep assetmapping-kafka | grep -q "Up"; then
-    echo -e "${GREEN}✓ Kafka is ready${NC}"
-else
-    echo -e "${RED}❌ Kafka failed to start${NC}"
     exit 1
 fi
 

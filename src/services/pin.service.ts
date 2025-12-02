@@ -176,16 +176,16 @@ export class PinService {
       const oldImageUrls: string[] = JSON.parse(data[0].images || '[]');
       const newImageUrls: string[] = JSON.parse(newImages || '[]');
 
-      const deletedImageUrls = oldImageUrls.filter((url) => !newImageUrls.includes(url));
+      const imageUrlsToDelete = oldImageUrls.filter((url) => !newImageUrls.includes(url));
 
-      if (deletedImageUrls.length > 0) {
+      if (imageUrlsToDelete.length > 0) {
         logger.info('Images to delete identified', {
           pinId,
-          count: deletedImageUrls.length,
+          count: imageUrlsToDelete.length,
         });
       }
 
-      return deletedImageUrls;
+      return imageUrlsToDelete;
     } catch (error) {
       logger.error('Error identifying images to delete', { error, pinId });
       return [];
@@ -200,7 +200,7 @@ export class PinService {
     const now = new Date();
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { localImages, failureReason, lastSyncedAt, lastFailedSyncAt, ...cleanData } = data;
+    const { failureReason, lastSyncedAt, lastFailedSyncAt, ...cleanData } = data;
 
     return {
       ...cleanData,

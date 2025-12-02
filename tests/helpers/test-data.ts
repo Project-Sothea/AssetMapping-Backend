@@ -15,7 +15,6 @@ export interface PinTestData {
   cityVillage?: string;
   description?: string;
   images?: string; // JSON array string
-  localImages?: string; // JSON array string
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string | null;
@@ -62,7 +61,6 @@ export class TestDataGenerator {
       cityVillage: TestDataGenerator.randomCity(),
       description: 'Test pin created for system testing',
       images: '[]', // JSON array string
-      localImages: '[]', // JSON array string
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       deletedAt: null,

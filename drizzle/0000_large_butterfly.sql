@@ -94,7 +94,6 @@ CREATE TABLE "pins" (
 	"status" varchar(50),
 	"lastSyncedAt" timestamp with time zone,
 	"lastFailedSyncAt" timestamp with time zone,
-	"localImages" text DEFAULT '[]',
 	"images" text DEFAULT '[]',
 	"version" integer DEFAULT 1
 );

@@ -3,9 +3,6 @@ Sync Flow in Backend:
 Device Updates (raw)
         │
         ▼
-Kafka: device_updates topic
-        │
-        ▼
 Conflict Consumer (resolve conflicts → write DB)
         │
         ▼
@@ -29,11 +26,6 @@ Projection Consumer (update Redis)
                   │ (offline/online)    │
                   └─────────┬──────────┘
                             │ Push Updates
-                            ▼
-                  ┌─────────────────────┐
-                  │ Kafka: device_updates│
-                  │  (raw device events) │
-                  └─────────┬──────────┘
                             │
                             ▼
                   ┌─────────────────────┐

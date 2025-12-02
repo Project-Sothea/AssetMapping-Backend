@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { WebSocketServer, WebSocket } from 'ws';
 import { Server as HTTPServer } from 'http';
-import { notificationConsumerService } from '../services/consumers/notification-consumer.service';
 import { logger } from '../utils/logger';
 import { parse as parseUrl } from 'url';
 import { safeJsonParse } from '../utils/parsing';
+import { webSocketManagerService } from '../services/notifications/websocket-manager.service';
 
 const router = Router();
 
@@ -31,8 +31,8 @@ export function initializeWebSocketServer(httpServer: HTTPServer): void {
 
       logger.info('WebSocket connection established', { userId });
 
-      // Register connection with notification service
-      notificationConsumerService.registerConnection(userId, ws);
+      // Register connection directly with WebSocket manager
+      webSocketManagerService.registerConnection(userId, ws);
 
       // Send welcome message
       ws.send(
@@ -91,7 +91,7 @@ export function initializeWebSocketServer(httpServer: HTTPServer): void {
  * Get notification service statistics
  */
 router.get('/stats', (_req: Request, res: Response) => {
-  const stats = notificationConsumerService.getStats();
+  const stats = webSocketManagerService.getStats();
   res.json({
     success: true,
     data: stats,
@@ -120,7 +120,7 @@ router.post('/test', async (req: Request, res: Response) => {
       payload: { message },
     };
 
-    await notificationConsumerService.notifyUser(userId, notification);
+    await webSocketManagerService.sendToUser(userId, notification);
 
     return res.json({
       success: true,

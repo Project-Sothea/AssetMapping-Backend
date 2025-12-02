@@ -17,7 +17,6 @@ export const pins = pgTable('pins', {
   status: varchar({ length: 50 }),
   lastSyncedAt: timestamp({ mode: 'date', withTimezone: true }),
   lastFailedSyncAt: timestamp({ mode: 'date', withTimezone: true }),
-  localImages: text().default('[]'),
   images: text().default('[]'),
   version: integer().default(1),
 });

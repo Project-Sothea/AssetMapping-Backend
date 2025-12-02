@@ -69,7 +69,7 @@ router.post(
       });
 
       // Pass uploaded files to sync service
-      const result = await syncService.syncItem(validatedRequest, req.files as Express.Multer.File[]);
+      const result = await syncService.syncItem(validatedRequest);
 
       res.json({
         success: true,

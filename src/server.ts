@@ -3,7 +3,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { config } from './config';
 import { connectRedis } from './config/redis';
-import { getKafkaProducer } from './config/kafka';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { logger } from './utils/logger';
@@ -77,17 +76,6 @@ const startServer = async () => {
     await connectRedis();
     logger.info('✓ Redis connected');
 
-    // Initialize Kafka producer
-    await getKafkaProducer();
-    logger.info('✓ Kafka producer connected');
-
-    // Start Notification Consumer (real-time notifications)
-    const { notificationConsumerService } = await import(
-      './services/consumers/notification-consumer.service'
-    );
-    await notificationConsumerService.start();
-    logger.info('✓ Notification consumer started');
-
     // Start Express server
     const server = app.listen(config.port, () => {
       logger.info(`✓ Server running on port ${config.port}`);
@@ -106,19 +94,10 @@ const startServer = async () => {
       server.close(async () => {
         try {
           // Stop event-driven services
-          const { notificationConsumerService } = await import(
-            './services/consumers/notification-consumer.service'
-          );
-
-          await notificationConsumerService.stop();
-          logger.info('✓ Notification consumer stopped');
-
           // Disconnect infrastructure
           const { disconnectRedis } = await import('./config/redis');
-          const { disconnectKafka } = await import('./config/kafka');
 
           await disconnectRedis();
-          await disconnectKafka();
 
           logger.info('✓ All connections closed');
           process.exit(0);

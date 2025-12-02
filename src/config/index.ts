@@ -13,12 +13,6 @@ export const config = {
     db: parseInt(process.env.REDIS_DB || '0', 10),
   },
 
-  kafka: {
-    brokers: (process.env.KAFKA_BROKERS || 'localhost:29092').split(','),
-    clientId: process.env.KAFKA_CLIENT_ID || 'assetmapping-backend',
-    groupId: process.env.KAFKA_GROUP_ID || 'assetmapping-consumer-group',
-  },
-
   images: {
     maxSizeMB: parseInt(process.env.MAX_IMAGE_SIZE_MB || '10', 10),
   },
