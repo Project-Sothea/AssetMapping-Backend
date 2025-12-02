@@ -1,15 +1,11 @@
 import { createClient } from 'redis';
-import { config } from './index';
 import { logger } from '../utils/logger';
+import { config } from './index';
 
 const redisClient = createClient({
-  socket: {
-    host: config.redis.host,
-    port: config.redis.port,
-  },
-  password: config.redis.password,
-  database: config.redis.db,
+  url: config.redis.url,
 });
+
 
 redisClient.on('error', (err) => {
   logger.error('Redis Client Error', err);
@@ -26,6 +22,7 @@ redisClient.on('ready', () => {
 redisClient.on('reconnecting', () => {
   logger.warn('Redis Client Reconnecting');
 });
+
 
 export const connectRedis = async () => {
   try {
