@@ -7,7 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "migrate": "node scripts/migration-helper.js",
+    "migrate": "npx drizzle-kit migrate",
     "lint": "eslint . && prettier -c .",
     "format": "eslint . --fix && prettier -w ."
   },
