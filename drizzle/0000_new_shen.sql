@@ -1,5 +1,5 @@
 CREATE TABLE "forms" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"createdAt" timestamp with time zone DEFAULT NOW(),
 	"updatedAt" timestamp with time zone DEFAULT NOW(),
 	"deletedAt" timestamp with time zone,
@@ -79,7 +79,7 @@ CREATE TABLE "forms" (
 );
 --> statement-breakpoint
 CREATE TABLE "pins" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v4() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"createdAt" timestamp with time zone DEFAULT NOW(),
 	"updatedAt" timestamp with time zone DEFAULT NOW(),
 	"lat" numeric(10, 8) NOT NULL,

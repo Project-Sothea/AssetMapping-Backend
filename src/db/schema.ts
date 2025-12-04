@@ -2,7 +2,7 @@ import { sql } from 'drizzle-orm';
 import { pgTable, uuid, text, boolean, varchar, decimal, integer, timestamp } from 'drizzle-orm/pg-core';
 
 export const pins = pgTable('pins', {
-  id: uuid().primaryKey().default(sql`uuid_generate_v4()`),
+  id: uuid().primaryKey().defaultRandom(),
   createdAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
   updatedAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
   lat: decimal({ precision: 10, scale: 8 }).notNull(),
@@ -22,7 +22,7 @@ export const pins = pgTable('pins', {
 });
 
 export const forms = pgTable('forms', {
-  id: uuid().primaryKey().default(sql`uuid_generate_v4()`),
+  id: uuid().primaryKey().defaultRandom(),
   createdAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
   updatedAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
   deletedAt: timestamp({ mode: 'date', withTimezone: true }),
