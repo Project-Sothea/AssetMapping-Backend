@@ -15,7 +15,7 @@
     "asset-mapping",
     "express",
     "typescript",
-    "redis",
+    "redis"
   ],
   "author": "",
   "license": "MIT",
