@@ -16,7 +16,6 @@
     "express",
     "typescript",
     "redis",
-    "kafka"
   ],
   "author": "",
   "license": "MIT",

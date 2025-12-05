@@ -1,5 +1,5 @@
 {
-  "id": "d27f20cc-9530-426a-a21a-b34136be07a6",
+  "id": "6e2171fe-c5db-4d5d-a540-8b649229a886",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -28,12 +28,6 @@
           "primaryKey": false,
           "notNull": false,
           "default": "NOW()"
-        },
-        "deletedAt": {
-          "name": "deletedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
         },
         "version": {
           "name": "version",
@@ -450,27 +444,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "failureReason": {
-          "name": "failureReason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "status": {
           "name": "status",
           "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lastSyncedAt": {
-          "name": "lastSyncedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lastFailedSyncAt": {
-          "name": "lastFailedSyncAt",
-          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         }
@@ -487,7 +463,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -565,33 +541,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "deletedAt": {
-          "name": "deletedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "failureReason": {
-          "name": "failureReason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "status": {
           "name": "status",
           "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lastSyncedAt": {
-          "name": "lastSyncedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lastFailedSyncAt": {
-          "name": "lastFailedSyncAt",
-          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },

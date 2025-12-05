@@ -2,7 +2,6 @@ CREATE TABLE "forms" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"createdAt" timestamp with time zone DEFAULT NOW(),
 	"updatedAt" timestamp with time zone DEFAULT NOW(),
-	"deletedAt" timestamp with time zone,
 	"version" integer DEFAULT 1 NOT NULL,
 	"pinId" uuid,
 	"villageId" text,
@@ -72,10 +71,7 @@ CREATE TABLE "forms" (
 	"otherWaterFilterNonUseReasons" text,
 	"handwashingAfterToilet" text,
 	"otherHandwashingAfterToilet" text,
-	"failureReason" text,
-	"status" text,
-	"lastSyncedAt" timestamp with time zone,
-	"lastFailedSyncAt" timestamp with time zone
+	"status" text
 );
 --> statement-breakpoint
 CREATE TABLE "pins" (
@@ -89,13 +85,9 @@ CREATE TABLE "pins" (
 	"address" text,
 	"cityVillage" varchar(255),
 	"description" text,
-	"deletedAt" timestamp with time zone,
-	"failureReason" text,
 	"status" varchar(50),
-	"lastSyncedAt" timestamp with time zone,
-	"lastFailedSyncAt" timestamp with time zone,
 	"images" text DEFAULT '[]',
 	"version" integer DEFAULT 1
 );
 --> statement-breakpoint
-ALTER TABLE "forms" ADD CONSTRAINT "forms_pinId_pins_id_fk" FOREIGN KEY ("pinId") REFERENCES "public"."pins"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "forms" ADD CONSTRAINT "forms_pinId_pins_id_fk" FOREIGN KEY ("pinId") REFERENCES "public"."pins"("id") ON DELETE cascade ON UPDATE no action;
