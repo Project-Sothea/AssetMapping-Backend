@@ -1,28 +1,28 @@
 import { db } from '../db'; // Import the Drizzle db instance
 import { pins } from '../db/schema'; // Import the pins table schema
-import { eq, isNull, desc, gte, and } from 'drizzle-orm'; // Import Drizzle query helpers
+import { eq, desc, gte } from 'drizzle-orm'; // Import Drizzle query helpers
 import { logger } from '../utils/logger';
-import { PinData } from '../types';
+import { Pin, PinDB } from '../db/schema';
+import { StorageService } from './storage.service';
 
 export class PinService {
-  static async getAllPins() {
+  static async getAllPins(): Promise<Pin[]> {
     logger.info('Fetching all pins');
     try {
       const data = await db
         .select()
         .from(pins)
-        .where(isNull(pins.deletedAt))
         .orderBy(desc(pins.createdAt));
 
       logger.info('Successfully fetched pins', { count: data?.length || 0 });
-      return data || [];
+      return (data || []).map((pin) => this.parsePin(pin));
     } catch (error) {
       logger.error('Error fetching pins', { error });
       throw error;
     }
   }
 
-  static async getPinsSince(timestamp: number) {
+  static async getPinsSince(timestamp: number): Promise<Pin[]> {
     logger.info('Fetching pins since timestamp', { timestamp });
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
@@ -33,27 +33,27 @@ export class PinService {
       const data = await db
         .select()
         .from(pins)
-        .where(and(isNull(pins.deletedAt), gte(pins.updatedAt, date)))
+        .where(gte(pins.updatedAt, date))
         .orderBy(pins.updatedAt);
 
       logger.info('Successfully fetched pins since timestamp', {
         timestamp,
         count: data?.length || 0,
       });
-      return data || [];
+      return (data || []).map((pin) => this.parsePin(pin));
     } catch (error) {
       logger.error('Error fetching pins since timestamp', { error, timestamp });
       throw error;
     }
   }
 
-  static async getPinById(id: string) {
+  static async getPinById(id: string): Promise<Pin> {
     logger.info('Fetching single pin', { pinId: id });
     try {
       const data = await db
         .select()
         .from(pins)
-        .where(and(eq(pins.id, id), isNull(pins.deletedAt)))
+        .where(eq(pins.id, id))
         .limit(1);
 
       if (!data || data.length === 0) {
@@ -62,7 +62,7 @@ export class PinService {
       }
 
       logger.info('Successfully fetched pin', { pinId: id });
-      return data[0];
+      return this.parsePin(data[0]);
     } catch (error) {
       logger.error('Error fetching pin', { error, pinId: id });
       throw error;
@@ -88,11 +88,26 @@ export class PinService {
   }
 
   /**
-   * Soft delete a pin by setting deletedAt
+   * Hard delete a pin and associated images
    */
   static async deletePin(pinId: string): Promise<void> {
     try {
-      await db.update(pins).set({ deletedAt: new Date() }).where(eq(pins.id, pinId));
+      // Fetch associated images
+      const images = await this.getPinImages(pinId);
+      // Derive keys: if value already looks like a key with '/', use as-is; else compose `pins/${pinId}/${imageId}`
+      const keys = images.map((img) => (img.includes('/') ? img : `pins/${pinId}/${img}`));
+
+      if (keys.length > 0) {
+        try {
+          await StorageService.deleteByKeys(keys);
+        } catch (deleteError) {
+          // Log but do not block pin soft-delete
+          logger.error('Failed deleting pin images from bucket', { pinId, error: deleteError });
+        }
+      }
+
+      // Hard delete the pin
+      await db.delete(pins).where(eq(pins.id, pinId));
     } catch (error) {
       logger.error('Error deleting pin', { error, pinId });
       throw error;
@@ -102,7 +117,7 @@ export class PinService {
   /**
    * Upsert a pin with version and conflict resolution
    */
-  static async upsertPin(data: PinData, version: number): Promise<PinData> {
+  static async upsertPin(data: Pin, version: number): Promise<Pin> {
     const pinData = this.preparePinData(data, version);
 
     try {
@@ -115,7 +130,7 @@ export class PinService {
         })
         .returning();
 
-      return result[0] as PinData;
+      return this.parsePin(result[0]);
     } catch (error) {
       logger.error('Error upserting pin', { error, data });
       throw error;
@@ -161,7 +176,7 @@ export class PinService {
   /**
    * Get list of images to delete when a pin is updated
    */
-  static async getImagesToDelete(pinId: string, newImages?: string | null): Promise<string[]> {
+  static async getImagesToDelete(pinId: string, newImages?: string[] | null): Promise<string[]> {
     try {
       const data = await db
         .select({ images: pins.images })
@@ -173,8 +188,10 @@ export class PinService {
         return [];
       }
 
-      const oldImageUrls: string[] = JSON.parse(data[0].images || '[]');
-      const newImageUrls: string[] = JSON.parse(newImages || '[]');
+      const oldImageUrls: string[] = JSON.parse((data[0].images as string) || '[]');
+      const newImageUrls: string[] = Array.isArray(newImages)
+        ? newImages
+        : JSON.parse((newImages as unknown as string) || '[]');
 
       const imageUrlsToDelete = oldImageUrls.filter((url) => !newImageUrls.includes(url));
 
@@ -195,18 +212,35 @@ export class PinService {
   /**
    * Prepare pin data (moved from PinOperations for reuse)
    */
-  private static preparePinData(data: PinData, version: number): PinData {
+  private static preparePinData(data: Pin, version: number): PinDB {
     const isCreate = !data.id;
     const now = new Date();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { failureReason, lastSyncedAt, lastFailedSyncAt, ...cleanData } = data;
-
     return {
-      ...cleanData,
+      ...data,
       version,
       updatedAt: now,
       ...(isCreate && { createdAt: now }),
-    } as PinData;
+      images: JSON.stringify(data.images ?? []),
+    } as PinDB;
+  }
+
+  static parsePin(data: PinDB): Pin {
+    let images: string[] | null = null;
+    if (Array.isArray(data.images)) {
+      images = data.images.map((img) => String(img));
+    } else if (typeof data.images === 'string' && data.images) {
+      try {
+        const parsed = JSON.parse(data.images);
+        images = Array.isArray(parsed) ? parsed.map((img) => String(img)) : null;
+      } catch {
+        images = null;
+      }
+    }
+
+    return {
+      ...data,
+      images,
+    };
   }
 }

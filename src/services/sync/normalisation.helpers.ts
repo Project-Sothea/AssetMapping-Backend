@@ -23,7 +23,7 @@ export function getDateFields(schema: z.ZodSchema): string[] {
   }
   // Fallback: hardcoded common date fields if introspection fails
   if (dateFields.length === 0) {
-    dateFields.push('createdAt', 'updatedAt', 'deletedAt', 'lastSyncedAt', 'lastFailedSyncAt');
+    dateFields.push('createdAt', 'updatedAt', 'lastSyncedAt', 'lastFailedSyncAt');
   }
   return dateFields;
 }

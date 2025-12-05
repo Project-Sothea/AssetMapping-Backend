@@ -12,11 +12,7 @@ export const pins = pgTable('pins', {
   address: text(),
   cityVillage: varchar({ length: 255 }),
   description: text(),
-  deletedAt: timestamp({ mode: 'date', withTimezone: true }),
-  failureReason: text(),
   status: varchar({ length: 50 }),
-  lastSyncedAt: timestamp({ mode: 'date', withTimezone: true }),
-  lastFailedSyncAt: timestamp({ mode: 'date', withTimezone: true }),
   images: text().default('[]'),
   version: integer().default(1),
 });
@@ -25,9 +21,8 @@ export const forms = pgTable('forms', {
   id: uuid().primaryKey().defaultRandom(),
   createdAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
   updatedAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
-  deletedAt: timestamp({ mode: 'date', withTimezone: true }),
   version: integer().notNull().default(1),
-  pinId: uuid().references(() => pins.id),
+  pinId: uuid().references(() => pins.id, { onDelete: 'cascade' }),
 
   // General
   villageId: text(),
@@ -105,8 +100,43 @@ export const forms = pgTable('forms', {
   otherHandwashingAfterToilet: text(),
 
   // Local-only fields (sync tracking)
-  failureReason: text(),
   status: text(),
-  lastSyncedAt: timestamp({ mode: 'date', withTimezone: true }),
-  lastFailedSyncAt: timestamp({ mode: 'date', withTimezone: true }),
-});
+  });
+
+// Inferred table types for reuse across services and API responses
+export type PinDB = typeof pins.$inferSelect;
+export type FormDB = typeof forms.$inferSelect;
+
+// Parsed/API form shape (array-ish JSON fields converted to string arrays)
+export const FORM_ARRAY_FIELDS = [
+  'longTermConditions',
+  'managementMethods',
+  'conditionDifficultyReasons',
+  'selfCareActions',
+  'noToothbrushOrToothpasteReasons',
+  'diarrhoeaDefinition',
+  'diarrhoeaActions',
+  'commonColdSymptoms',
+  'commonColdActions',
+  'mskInjuryDefinition',
+  'mskInjuryActions',
+  'hypertensionDefinition',
+  'hypertensionActions',
+  'unhealthyFoodReasons',
+  'highCholesterolDefinition',
+  'highCholesterolActions',
+  'diabetesDefinition',
+  'diabetesActions',
+  'waterSources',
+  'unsafeWaterTypes',
+  'waterFilterNonUseReasons',
+] as const;
+
+export type FormArrayFieldKeys = (typeof FORM_ARRAY_FIELDS)[number];
+
+export type Form = Omit<FormDB, FormArrayFieldKeys> & {
+  [K in FormArrayFieldKeys]: string[] | null;
+};
+
+// Parsed/API pin shape with images decoded
+export type Pin = Omit<PinDB, 'images'> & { images?: string[] | null };

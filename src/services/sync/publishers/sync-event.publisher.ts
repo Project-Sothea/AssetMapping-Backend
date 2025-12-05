@@ -1,5 +1,8 @@
-import { PinData, FormData, SyncItemRequest, SyncEvent } from '../../../types';
-import { webSocketManagerService } from '../../notifications/websocket-manager.service';
+import { Pin, Form, PinDB, FormDB } from '../../../db/schema';
+import { SyncItemRequest, SyncEvent } from '../../../types';
+import { PinService } from '../../pin.service';
+import { FormService } from '../../form.service';
+import { webSocketManagerService } from '../../../websocket/manager';
 import { logger } from '../../../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,10 +16,18 @@ import { v4 as uuidv4 } from 'uuid';
 export class SyncEventPublisher {
   async publish(
     request: SyncItemRequest,
-    result: PinData | FormData | { id: string; deleted: boolean }
+    result: Pin | Form | { id: string; deleted: boolean }
   ): Promise<void> {
     const payload = request.payload as Record<string, unknown>;
-    const entityId = result.id || (payload.id as string) || '';
+    const entityId =
+      'deleted' in result ? result.id : (result as Pin | Form).id || (payload.id as string) || '';
+
+    const parsedRequestPayload =
+      request.entityType === 'pin'
+        ? PinService.parsePin(request.payload as PinDB)
+        : FormService.parseFormArrays(request.payload as FormDB);
+    const eventPayload =
+      'deleted' in result ? parsedRequestPayload : (result as Pin | Form);
     // Build sync event and broadcast directly via WebSockets
     const event: SyncEvent = {
       eventId: uuidv4(),
@@ -25,7 +36,7 @@ export class SyncEventPublisher {
       entityType: request.entityType,
       entityId,
       idempotencyKey: request.idempotencyKey,
-      payload: request.payload as PinData | FormData,
+      payload: eventPayload,
       userId: (payload.userId as string) || 'system',
       deviceId: request.deviceId,
     };

@@ -46,24 +46,6 @@ export class IdempotencyService {
     this.redisAvailable = false;
     this.lastRedisFailure = Date.now();
   }
-  /**
-   * Check if an idempotency key has already been processed
-   */
-  async checkIdempotency(key: string): Promise<boolean> {
-    if (this.isCircuitOpen()) {
-      logger.warn('Redis circuit breaker open, skipping idempotency check');
-      return false;
-    }
-
-    try {
-      const redisKey = `${IDEMPOTENCY_PREFIX}${key}`;
-      const exists = await redisClient.exists(redisKey);
-      return exists === 1;
-    } catch (error) {
-      this.handleRedisError(error, 'checkIdempotency');
-      throw new Error('Idempotency service unavailable. Please try again.');
-    }
-  }
 
   /**
    * Get the result of a previously processed idempotent request

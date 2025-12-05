@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { PinData, FormData, SyncItemRequest, PinSelectSchema, FormSelectSchema } from '../../types';
+import { PinDB, FormDB, Pin, Form } from '../../db/schema';
+import { SyncItemRequest, PinSelectSchema, FormSelectSchema } from '../../types';
+import { PinService } from '../pin.service';
+import { FormService } from '../form.service';
 import { idempotencyService } from '../infrastructure/idempotency.service';
 import { pinOperations } from './operations/pin.operations';
 import { formOperations } from './operations/form.operations';
@@ -12,9 +15,9 @@ export class SyncService {
   /**
    * Process a sync item with idempotency and timeout
    */
-  async syncItem(
+  async sync(
     request: SyncItemRequest,
-  ): Promise<PinData | FormData | { id: string; deleted: boolean }> {
+  ): Promise<Pin | Form | { id: string; deleted: boolean }> {
     return this.withTimeout(
       idempotencyService.processWithIdempotency(request.idempotencyKey, async () => {
         const result = await this.executeSyncOperation(request);
@@ -42,7 +45,7 @@ export class SyncService {
    */
   private async executeSyncOperation(
     request: SyncItemRequest,
-  ): Promise<PinData | FormData | { id: string; deleted: boolean }> {
+  ): Promise<Pin | Form | { id: string; deleted: boolean }> {
     const { entityType, operation, payload } = request;
 
     // Determine the schema and normalize based on it
@@ -58,9 +61,11 @@ export class SyncService {
     const normalizedPayload = normalizePayload(payload, schema);
 
     if (entityType === 'pin') {
-      return pinOperations.syncEntity(operation, normalizedPayload as PinData);
+      const pinPayload = PinService.parsePin(normalizedPayload as PinDB);
+      return pinOperations.syncEntity(operation, pinPayload);
     } else if (entityType === 'form') {
-      return formOperations.syncEntity(operation, normalizedPayload as FormData);
+      const formPayload = FormService.parseFormArrays(normalizedPayload as FormDB);
+      return formOperations.syncEntity(operation, formPayload);
     }
 
     throw new Error(`Unsupported entity type: ${entityType}`);
