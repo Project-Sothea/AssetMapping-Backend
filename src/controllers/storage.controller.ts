@@ -1,22 +1,38 @@
 import { Request, Response, NextFunction } from 'express';
 import { StorageService } from '../services/storage.service';
+import type { ApiResponse } from '../types';
+
+type DeleteObjectsResult = {
+  deleted: number;
+  errors: number;
+};
 
 export class StorageController {
-  static async getUploadUrl(req: Request, res: Response, next: NextFunction) {
-      try {
-          const key = String(req.query.key || '');
-          const mimeType = String(req.query.mimeType || '');
-          if (!key || !mimeType) {
-              return res.status(400).json({ success: false, error: 'Missing required fields: key, mimeType' });
-          }
-          const url = await StorageService.getUploadUrl(key, mimeType);
-          return res.json({ success: true, data: url });
-      } catch (error) {
-          return next(error);
+  static async getUploadUrl(
+    req: Request,
+    res: Response<ApiResponse<string>>,
+    next: NextFunction
+  ) {
+    try {
+      const key = String(req.query.key || '');
+      const mimeType = String(req.query.mimeType || '');
+      if (!key || !mimeType) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'Missing required fields: key, mimeType' });
       }
+      const url = await StorageService.getUploadUrl(key, mimeType);
+      return res.json({ success: true, data: url });
+    } catch (error) {
+      return next(error);
+    }
   }
 
-  static async getDownloadUrl(req: Request, res: Response, next: NextFunction) {
+  static async getDownloadUrl(
+    req: Request,
+    res: Response<ApiResponse<string>>,
+    next: NextFunction
+  ) {
     try {
       const key = String(req.query.key || '');
       if (!key) {
@@ -29,7 +45,11 @@ export class StorageController {
     }
   }
 
-  static async deleteObjects(req: Request, res: Response, next: NextFunction) {
+  static async deleteObjects(
+    req: Request,
+    res: Response<ApiResponse<DeleteObjectsResult>>,
+    next: NextFunction
+  ) {
     try {
       const keys = (req.body?.keys as string[]) || [];
       if (!Array.isArray(keys) || keys.length === 0) {

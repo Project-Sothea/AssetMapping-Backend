@@ -17,6 +17,7 @@ export const errorHandler = (
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       success: false,
+      error: err.message,
       message: err.message,
       ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
     });
@@ -25,7 +26,8 @@ export const errorHandler = (
   // Unknown errors
   return res.status(500).json({
     success: false,
-    message: 'Internal server error',
+    error: 'Internal server error',
+    message: err.message || 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && {
       message: err.message,
       stack: err.stack,
@@ -36,6 +38,7 @@ export const errorHandler = (
 export const notFoundHandler = (req: Request, res: Response) => {
   res.status(404).json({
     success: false,
+    error: `Route ${req.method} ${req.path} not found`,
     message: `Route ${req.method} ${req.path} not found`,
   });
 };

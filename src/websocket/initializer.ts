@@ -26,7 +26,6 @@ export function initializeWebSocketServer(httpServer: HTTPServer): void {
         JSON.stringify({ type: 'system', action: 'connected', timestamp: new Date().toISOString(), message: 'Connected to notification service' })
       );
 
-      ws.on('ping', () => ws.pong());
       ws.on('message', (data: Buffer) => {
         try {
           const message = safeJsonParse(data.toString(), { type: 'unknown' });
