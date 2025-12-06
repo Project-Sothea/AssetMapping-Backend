@@ -40,10 +40,6 @@ export type Form = Omit<FormDB, FormArrayFieldKey> & {
 // Parsed/API pin shape with images decoded
 export type Pin = Omit<PinDB, 'images'> & { images: string[] };
 
-export type IsoDateString = string;
-export type Timestamp = Date | null;
-export type SerializedTimestamp = IsoDateString | null;
-
 export type EntityType = 'pin' | 'form';
 export type OperationType = 'create' | 'update' | 'delete';
 
@@ -66,7 +62,7 @@ export interface SyncItemRequest {
   entityType: EntityType;
   operation: OperationType;
   payload: Record<string, unknown>;
-  timestamp?: string;
+  timestamp?: Date;
   deviceId?: string;
 }
 
@@ -77,7 +73,7 @@ export interface SyncEvent {
   entityId: string;
   idempotencyKey: string;
   payload: Pin | Form;
-  timestamp: IsoDateString;
+  timestamp: Date;
   userId?: string;
   deviceId?: string;
 }
@@ -95,7 +91,7 @@ export interface SyncNotification {
   action: SyncAction;
   eventId: string;
   aggregateId: string;
-  timestamp: IsoDateString;
+  timestamp: Date;
   payload: SyncNotificationPayload;
 }
 

@@ -33,7 +33,7 @@ export class SyncEventPublisher {
     // Build sync event and broadcast directly via WebSockets
     const event: SyncEvent = {
       eventId: uuidv4(),
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(),
       eventType: this.getEventType(request.operation),
       entityType: request.entityType,
       entityId,

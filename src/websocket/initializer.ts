@@ -29,7 +29,7 @@ export function initializeWebSocketServer(httpServer: HTTPServer): void {
         JSON.stringify({
           type: 'system',
           action: 'connected',
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(),
           message: 'Connected to notification service',
         })
       );
@@ -38,9 +38,6 @@ export function initializeWebSocketServer(httpServer: HTTPServer): void {
         try {
           const message = safeJsonParse(data.toString(), { type: 'unknown' });
           logger.debug('WebSocket message received', { userId, message });
-          if (message.type === 'ping') {
-            ws.send(JSON.stringify({ type: 'pong', timestamp: new Date().toISOString() }));
-          }
         } catch (error) {
           logger.error('Error parsing WebSocket message', { error, userId });
         }

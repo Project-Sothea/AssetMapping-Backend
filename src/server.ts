@@ -47,7 +47,7 @@ app.use('/api/', limiter);
 app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
-    timestamp: new Date().toISOString(),
+    timestamp: new Date(),
     uptime: process.uptime(),
     environment: config.nodeEnv,
   });
