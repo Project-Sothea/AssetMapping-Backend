@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { PinDB, FormDB, Pin, Form } from '../../db/schema';
-import { SyncItemRequest, PinSelectSchema, FormSelectSchema } from '../../types';
+import { PinDB, FormDB, Pin, Form, SyncItemRequest } from '@assetmapping/shared-types';
+import { PinSelectSchema, FormSelectSchema } from '../../types';
 import { PinService } from '../pin.service';
 import { FormService } from '../form.service';
 import { idempotencyService } from '../infrastructure/idempotency.service';

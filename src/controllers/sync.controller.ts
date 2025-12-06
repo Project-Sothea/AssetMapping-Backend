@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { syncService } from '../services/sync/sync.service';
-import { SyncItemRequestSchema, SyncItemRequest, ApiResponse } from '../types';
-import type { Pin, Form } from '../db/schema';
-
-type SyncResult = Pin | Form | { id: string; deleted: boolean };
+import { SyncItemRequestSchema } from '../types';
+import type { SyncItemRequest, ApiResponse, SyncResult } from '@assetmapping/shared-types';
 
 export class SyncController {
   static async sync(

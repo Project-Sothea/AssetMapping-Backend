@@ -1,35 +1,43 @@
-import { sql } from 'drizzle-orm';
-import { pgTable, uuid, text, boolean, varchar, decimal, integer, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, boolean, real, integer, timestamp } from 'drizzle-orm/pg-core';
 
 export const pins = pgTable('pins', {
+  // Metadata
   id: uuid().primaryKey().defaultRandom(),
-  createdAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
-  updatedAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
-  lat: decimal({ precision: 10, scale: 8 }).notNull(),
-  lng: decimal({ precision: 11, scale: 8 }).notNull(),
-  type: varchar({ length: 50 }).notNull().default('normal'),
-  name: varchar({ length: 255 }),
+  createdAt: timestamp({ mode: 'date', withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'date', withTimezone: true }).defaultNow(),
+  version: integer().notNull().default(1),
+  status: text(),
+
+  // Location
+  lat: real().notNull(),
+  lng: real().notNull(),
+
+  // Details
+  name: text().notNull(),
   address: text(),
-  cityVillage: varchar({ length: 255 }),
+  cityVillage: text(),
   description: text(),
-  status: varchar({ length: 50 }),
-  images: text().default('[]'),
-  version: integer().default(1),
+  type: text(),
+
+  // Images - stored as JSON array of filenames (UUIDs)
+  images: text(),
 });
 
 export const forms = pgTable('forms', {
-  id: uuid().primaryKey().defaultRandom(),
-  createdAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
-  updatedAt: timestamp({ mode: 'date', withTimezone: true }).default(sql`NOW()`),
+  // Metadata
+  id: uuid().primaryKey(),
+  createdAt: timestamp({ mode: 'date', withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp({ mode: 'date', withTimezone: true }).defaultNow(),
   version: integer().notNull().default(1),
   pinId: uuid().references(() => pins.id, { onDelete: 'cascade' }),
+  status: text(),
 
   // General
-  villageId: text(),
-  name: text(),
+  villageId: text().notNull(),
+  name: text().notNull(),
+  village: text().notNull(),
   gender: text(),
   age: integer(),
-  village: text(),
   canAttendHealthScreening: boolean(),
 
   // Health
@@ -98,45 +106,6 @@ export const forms = pgTable('forms', {
   otherWaterFilterNonUseReasons: text(),
   handwashingAfterToilet: text(),
   otherHandwashingAfterToilet: text(),
+});
 
-  // Local-only fields (sync tracking)
-  status: text(),
-  });
 
-// Inferred table types for reuse across services and API responses
-export type PinDB = typeof pins.$inferSelect;
-export type FormDB = typeof forms.$inferSelect;
-
-// Parsed/API form shape (array-ish JSON fields converted to string arrays)
-export const FORM_ARRAY_FIELDS = [
-  'longTermConditions',
-  'managementMethods',
-  'conditionDifficultyReasons',
-  'selfCareActions',
-  'noToothbrushOrToothpasteReasons',
-  'diarrhoeaDefinition',
-  'diarrhoeaActions',
-  'commonColdSymptoms',
-  'commonColdActions',
-  'mskInjuryDefinition',
-  'mskInjuryActions',
-  'hypertensionDefinition',
-  'hypertensionActions',
-  'unhealthyFoodReasons',
-  'highCholesterolDefinition',
-  'highCholesterolActions',
-  'diabetesDefinition',
-  'diabetesActions',
-  'waterSources',
-  'unsafeWaterTypes',
-  'waterFilterNonUseReasons',
-] as const;
-
-export type FormArrayFieldKeys = (typeof FORM_ARRAY_FIELDS)[number];
-
-export type Form = Omit<FormDB, FormArrayFieldKeys> & {
-  [K in FormArrayFieldKeys]: string[] | null;
-};
-
-// Parsed/API pin shape with images decoded
-export type Pin = Omit<PinDB, 'images'> & { images?: string[] | null };

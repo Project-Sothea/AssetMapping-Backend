@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { FormService } from '../services/form.service';
-import type { ApiResponse } from '../types';
-import type { Form } from '../db/schema';
+import type { Form, ApiResponse } from '@assetmapping/shared-types';
 
 type FormsSinceQuery = {
   timestamp?: string | string[];

@@ -1,5 +1,5 @@
 {
-  "id": "6e2171fe-c5db-4d5d-a540-8b649229a886",
+  "id": "31c3de9a-08e0-4934-8194-f0ed904701ad",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -12,22 +12,21 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "NOW()"
+          "notNull": true,
+          "default": "now()"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,
-          "default": "NOW()"
+          "default": "now()"
         },
         "version": {
           "name": "version",
@@ -42,17 +41,29 @@
           "primaryKey": false,
           "notNull": false
         },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "villageId": {
           "name": "villageId",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "village": {
+          "name": "village",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
         },
         "gender": {
           "name": "gender",
@@ -63,12 +74,6 @@
         "age": {
           "name": "age",
           "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "village": {
-          "name": "village",
-          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -443,12 +448,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {},
@@ -488,40 +487,46 @@
           "name": "createdAt",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false,
-          "default": "NOW()"
+          "notNull": true,
+          "default": "now()"
         },
         "updatedAt": {
           "name": "updatedAt",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false,
-          "default": "NOW()"
+          "default": "now()"
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "lat": {
           "name": "lat",
-          "type": "numeric(10, 8)",
+          "type": "real",
           "primaryKey": false,
           "notNull": true
         },
         "lng": {
           "name": "lng",
-          "type": "numeric(11, 8)",
+          "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "type": {
-          "name": "type",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'normal'"
-        },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "address": {
           "name": "address",
@@ -531,7 +536,7 @@
         },
         "cityVillage": {
           "name": "cityVillage",
-          "type": "varchar(255)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -541,9 +546,9 @@
           "primaryKey": false,
           "notNull": false
         },
-        "status": {
-          "name": "status",
-          "type": "varchar(50)",
+        "type": {
+          "name": "type",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -551,15 +556,7 @@
           "name": "images",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "default": "'[]'"
-        },
-        "version": {
-          "name": "version",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 1
+          "notNull": false
         }
       },
       "indexes": {},

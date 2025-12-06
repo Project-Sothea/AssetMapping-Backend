@@ -1,4 +1,4 @@
-import { EntityType, OperationType } from '../../../types';
+import { EntityType, OperationType } from '@assetmapping/shared-types';
 import { logger } from '../../../utils/logger';
 import { IOperations } from './operations.interface';
 

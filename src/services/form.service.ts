@@ -1,8 +1,13 @@
 import { db } from '../db'; // Import the Drizzle db instance
-import { forms } from '../db/schema'; // Import the forms table schema
 import { eq, desc, gte } from 'drizzle-orm'; // Import Drizzle query helpers
 import { logger } from '../utils/logger';
-import { FormDB, FormArrayFieldKeys, Form, FORM_ARRAY_FIELDS } from '../db/schema';
+import {
+  forms,
+  FormDB,
+  FormArrayFieldKeys,
+  Form,
+  FORM_ARRAY_FIELDS,
+} from '@assetmapping/shared-types';
 
 export class FormService {
   static async getAllForms(): Promise<Form[]> {

@@ -1,5 +1,4 @@
-import { EntityType } from '../../../types';
-import { Form } from '../../../db/schema';
+import { EntityType, Form } from '@assetmapping/shared-types';
 import { FormService } from '../../form.service';
 import { BaseOperations } from './base.operations';
 

@@ -1,5 +1,12 @@
-import { Pin, Form, PinDB, FormDB } from '../../../db/schema';
-import { SyncItemRequest, SyncEvent } from '../../../types';
+import type {
+  Pin,
+  Form,
+  PinDB,
+  FormDB,
+  SyncEvent,
+  SyncItemRequest,
+  SyncNotification,
+} from '@assetmapping/shared-types';
 import { PinService } from '../../pin.service';
 import { FormService } from '../../form.service';
 import { webSocketManagerService } from '../../../websocket/manager';
@@ -42,7 +49,7 @@ export class SyncEventPublisher {
     };
 
     // Transform to notification payload (same shape used by consumer previously)
-    const notification = {
+    const notification: SyncNotification = {
       type: event.entityType,
       action: this.getAction(event.eventType),
       eventId: event.eventId,
@@ -85,9 +92,16 @@ export class SyncEventPublisher {
     }
   }
 
-  private getAction(eventType: string): string {
-    const parts = eventType.split('.');
-    return parts[parts.length - 1];
+  private getAction(eventType: SyncEvent['eventType']): SyncNotification['action'] {
+    switch (eventType) {
+      case 'sync.item.created':
+        return 'created';
+      case 'sync.item.deleted':
+        return 'deleted';
+      case 'sync.item.updated':
+      default:
+        return 'updated';
+    }
   }
 }
 

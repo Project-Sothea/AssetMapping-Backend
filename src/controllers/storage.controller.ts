@@ -1,11 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { StorageService } from '../services/storage.service';
-import type { ApiResponse } from '../types';
-
-type DeleteObjectsResult = {
-  deleted: number;
-  errors: number;
-};
+import type { ApiResponse, StorageDeleteResult } from '@assetmapping/shared-types';
 
 export class StorageController {
   static async getUploadUrl(
@@ -47,7 +42,7 @@ export class StorageController {
 
   static async deleteObjects(
     req: Request,
-    res: Response<ApiResponse<DeleteObjectsResult>>,
+    res: Response<ApiResponse<StorageDeleteResult>>,
     next: NextFunction
   ) {
     try {

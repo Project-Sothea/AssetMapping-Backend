@@ -1,8 +1,7 @@
 import { db } from '../db'; // Import the Drizzle db instance
-import { pins } from '../db/schema'; // Import the pins table schema
 import { eq, desc, gte } from 'drizzle-orm'; // Import Drizzle query helpers
 import { logger } from '../utils/logger';
-import { Pin, PinDB } from '../db/schema';
+import { pins, Pin, PinDB } from '@assetmapping/shared-types';
 import { StorageService } from './storage.service';
 
 export class PinService {

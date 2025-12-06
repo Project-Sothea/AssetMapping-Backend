@@ -2,10 +2,14 @@
   "name": "assetmapping-backend",
   "version": "1.0.0",
   "description": "Backend service for Asset Mapping application with sync, validation, and image processing",
+  "workspaces": [
+    "packages/*"
+  ],
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "npm run build:types && tsc",
+    "build:types": "npm run build --workspace @assetmapping/shared-types",
     "start": "node dist/server.js",
     "migrate": "npx drizzle-kit migrate",
     "lint": "eslint . && prettier -c .",
@@ -20,6 +24,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@assetmapping/shared-types": "file:packages/shared-types",
     "@aws-sdk/client-s3": "^3.699.0",
     "@aws-sdk/s3-request-presigner": "^3.699.0",
     "dotenv": "^16.3.1",

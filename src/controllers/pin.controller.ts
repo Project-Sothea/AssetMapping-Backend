@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PinService } from '../services/pin.service';
-import type { ApiResponse } from '../types';
-import type { Pin } from '../db/schema';
+import type { ApiResponse, Pin } from '@assetmapping/shared-types';
 
 type PinsSinceQuery = {
   timestamp?: string | string[];

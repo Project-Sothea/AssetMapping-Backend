@@ -1,14 +1,15 @@
 CREATE TABLE "forms" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT NOW(),
-	"updatedAt" timestamp with time zone DEFAULT NOW(),
+	"id" uuid PRIMARY KEY NOT NULL,
+	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"updatedAt" timestamp with time zone DEFAULT now(),
 	"version" integer DEFAULT 1 NOT NULL,
 	"pinId" uuid,
-	"villageId" text,
-	"name" text,
+	"status" text,
+	"villageId" text NOT NULL,
+	"name" text NOT NULL,
+	"village" text NOT NULL,
 	"gender" text,
 	"age" integer,
-	"village" text,
 	"canAttendHealthScreening" boolean,
 	"longTermConditions" text,
 	"otherLongTermConditions" text,
@@ -70,24 +71,23 @@ CREATE TABLE "forms" (
 	"waterFilterNonUseReasons" text,
 	"otherWaterFilterNonUseReasons" text,
 	"handwashingAfterToilet" text,
-	"otherHandwashingAfterToilet" text,
-	"status" text
+	"otherHandwashingAfterToilet" text
 );
 --> statement-breakpoint
 CREATE TABLE "pins" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"createdAt" timestamp with time zone DEFAULT NOW(),
-	"updatedAt" timestamp with time zone DEFAULT NOW(),
-	"lat" numeric(10, 8) NOT NULL,
-	"lng" numeric(11, 8) NOT NULL,
-	"type" varchar(50) DEFAULT 'normal' NOT NULL,
-	"name" varchar(255),
+	"createdAt" timestamp with time zone DEFAULT now() NOT NULL,
+	"updatedAt" timestamp with time zone DEFAULT now(),
+	"version" integer DEFAULT 1 NOT NULL,
+	"status" text,
+	"lat" real NOT NULL,
+	"lng" real NOT NULL,
+	"name" text NOT NULL,
 	"address" text,
-	"cityVillage" varchar(255),
+	"cityVillage" text,
 	"description" text,
-	"status" varchar(50),
-	"images" text DEFAULT '[]',
-	"version" integer DEFAULT 1
+	"type" text,
+	"images" text
 );
 --> statement-breakpoint
 ALTER TABLE "forms" ADD CONSTRAINT "forms_pinId_pins_id_fk" FOREIGN KEY ("pinId") REFERENCES "public"."pins"("id") ON DELETE cascade ON UPDATE no action;

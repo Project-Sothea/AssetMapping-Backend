@@ -1,5 +1,4 @@
-import { EntityType } from '../../../types';
-import { Pin } from '../../../db/schema';
+import type { Pin, EntityType } from '@assetmapping/shared-types';
 import { PinService } from '../../pin.service';
 import { BaseOperations } from './base.operations';
 
