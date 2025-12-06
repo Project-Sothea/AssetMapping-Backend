@@ -29,7 +29,9 @@ export const forms = pgTable('forms', {
   createdAt: timestamp({ mode: 'date', withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp({ mode: 'date', withTimezone: true }).defaultNow(),
   version: integer().notNull().default(1),
-  pinId: uuid().references(() => pins.id, { onDelete: 'cascade' }),
+  pinId: uuid()
+    .references(() => pins.id, { onDelete: 'cascade' })
+    .notNull(),
   status: text(),
 
   // General
