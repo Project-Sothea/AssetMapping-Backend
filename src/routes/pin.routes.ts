@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { PinController } from '../controllers/pin.controller';
 
 const router = Router();
@@ -10,10 +11,10 @@ const router = Router();
 router.get('/', PinController.getAllPins);
 
 /**
- * GET /api/pins/since/:timestamp
- * Fetch all pins updated after a specific timestamp
+ * GET /api/pins/since?timestamp=<ms or ISO string>
+ * Fetch all pins updated after a specific timestamp (timestamp query param also accepts "since" for backwards compatibility)
  */
-router.get('/since/:timestamp', PinController.getPinsSince);
+router.get('/since', PinController.getPinsSince);
 
 /**
  * GET /api/pins/:id

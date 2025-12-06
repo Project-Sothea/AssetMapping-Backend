@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { FormController } from '../controllers/form.controller';
 
 const router = Router();
@@ -10,10 +11,10 @@ const router = Router();
 router.get('/', FormController.getAllForms);
 
 /**
- * GET /api/forms/since/:timestamp
- * Fetch all forms updated after a specific timestamp
+ * GET /api/forms/since?timestamp=<ms or ISO string>
+ * Fetch all forms updated after a specific timestamp (timestamp query param also accepts "since" for backwards compatibility)
  */
-router.get('/since/:timestamp', FormController.getFormsSince);
+router.get('/since', FormController.getFormsSince);
 
 /**
  * GET /api/forms/:id

@@ -18,9 +18,9 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["jest", "node"],
+    "types": ["node"],
     "noImplicitAny": false
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

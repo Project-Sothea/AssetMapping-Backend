@@ -1,14 +1,11 @@
 import { createClient } from 'redis';
-import { config } from './index';
+
 import { logger } from '../utils/logger';
 
+import { config } from './index';
+
 const redisClient = createClient({
-  socket: {
-    host: config.redis.host,
-    port: config.redis.port,
-  },
-  password: config.redis.password,
-  database: config.redis.db,
+  url: config.redis.url,
 });
 
 redisClient.on('error', (err) => {

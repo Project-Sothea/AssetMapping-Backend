@@ -1,11 +1,13 @@
-import { EntityType, FormData } from '../../../types';
+import { EntityType, Form } from '@assetmapping/shared-types';
+
 import { FormService } from '../../form.service';
+
 import { BaseOperations } from './base.operations';
 
 /**
  * Form Operations Service
  */
-export class FormOperations extends BaseOperations<FormData> {
+export class FormOperations extends BaseOperations<Form> {
   getEntityType(): EntityType {
     return 'form';
   }
@@ -18,7 +20,7 @@ export class FormOperations extends BaseOperations<FormData> {
     return FormService.getFormVersion(id);
   }
 
-  async performUpsert(data: FormData, version: number): Promise<FormData> {
+  async performUpsert(data: Form, version: number): Promise<Form> {
     return FormService.upsertForm(data, version);
   }
 
