@@ -1,5 +1,11 @@
-import { S3Client, DeleteObjectsCommand, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  DeleteObjectsCommand,
+  PutObjectCommand,
+  GetObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
 import { config } from '../config';
 import { logger } from '../utils/logger';
 
@@ -58,9 +64,7 @@ export class StorageService {
       throw new Error('S3 bucket not configured');
     }
 
-    const objects = keys
-      .filter((k) => !!k)
-      .map((Key) => ({ Key }));
+    const objects = keys.filter((k) => !!k).map((Key) => ({ Key }));
 
     const s3 = getS3Client();
     try {

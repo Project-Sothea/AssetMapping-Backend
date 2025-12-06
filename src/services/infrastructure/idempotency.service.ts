@@ -2,6 +2,7 @@ import { redisClient } from '../../config/redis';
 import { ConflictError } from '../../types';
 import { logger } from '../../utils/logger';
 import { safeJsonParse } from '../../utils/parsing';
+
 import { distributedLockService } from './distributed-lock.service';
 
 const IDEMPOTENCY_PREFIX = 'idempotency:';
@@ -96,7 +97,7 @@ export class IdempotencyService {
   async processWithIdempotency<T>(key: string, handler: () => Promise<T>): Promise<T> {
     // Check if already processed (gracefully handles Redis failure)
     const existing = await this.getIdempotentResult(key);
-    if (existing) {
+    if (existing !== null && existing !== undefined) {
       logger.info('Returning cached idempotent result', { key });
       return existing as T;
     }
@@ -118,7 +119,7 @@ export class IdempotencyService {
       try {
         // Double-check result (might have been set while waiting for lock)
         const existingAfterLock = await this.getIdempotentResult(key);
-        if (existingAfterLock) {
+        if (existingAfterLock !== null && existingAfterLock !== undefined) {
           logger.info('Returning cached idempotent result (after lock)', { key });
           return existingAfterLock as T;
         }

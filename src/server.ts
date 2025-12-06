@@ -1,18 +1,19 @@
 import express, { Application, Request, Response } from 'express';
-import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+
 import { config } from './config';
 import { connectRedis } from './config/redis';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
+import formRoutes from './routes/form.routes';
+import pinRoutes from './routes/pin.routes';
+import storageRoutes from './routes/storage.routes';
+import syncRoutes from './routes/sync.routes';
 import { logger } from './utils/logger';
 
 // Import routes
-import syncRoutes from './routes/sync.routes';
-import pinRoutes from './routes/pin.routes';
-import formRoutes from './routes/form.routes';
 import { initializeWebSocketServer } from './websocket/initializer';
-import storageRoutes from './routes/storage.routes';
 
 const app: Application = express();
 

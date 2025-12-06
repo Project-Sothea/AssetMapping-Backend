@@ -1,17 +1,14 @@
 import type {
   Pin,
   Form,
-  PinDB,
-  FormDB,
   SyncEvent,
   SyncItemRequest,
   SyncNotification,
 } from '@assetmapping/shared-types';
-import { PinService } from '../../pin.service';
-import { FormService } from '../../form.service';
-import { webSocketManagerService } from '../../../websocket/manager';
-import { logger } from '../../../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
+
+import { logger } from '../../../utils/logger';
+import { webSocketManagerService } from '../../../websocket/manager';
 
 /**
  * Sync Event Publisher
@@ -29,12 +26,10 @@ export class SyncEventPublisher {
     const entityId =
       'deleted' in result ? result.id : (result as Pin | Form).id || (payload.id as string) || '';
 
-    const parsedRequestPayload =
-      request.entityType === 'pin'
-        ? PinService.parsePin(request.payload as PinDB)
-        : FormService.parseFormArrays(request.payload as FormDB);
     const eventPayload =
-      'deleted' in result ? parsedRequestPayload : (result as Pin | Form);
+      'deleted' in result
+        ? (payload as Pin | Form) || { id: entityId }
+        : (result as Pin | Form) || (payload as Pin | Form);
     // Build sync event and broadcast directly via WebSockets
     const event: SyncEvent = {
       eventId: uuidv4(),

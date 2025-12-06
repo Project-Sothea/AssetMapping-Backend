@@ -1,6 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { FormService } from '../services/form.service';
 import type { Form, ApiResponse } from '@assetmapping/shared-types';
+import { Request, Response, NextFunction } from 'express';
+
+import { FormService } from '../services/form.service';
+import { logger } from '../utils/logger';
 
 type FormsSinceQuery = {
   timestamp?: string | string[];
@@ -23,11 +25,7 @@ const parseTimestampQuery = (value?: string | string[]): number => {
 };
 
 export class FormController {
-  static async getAllForms(
-    _req: Request,
-    res: Response<ApiResponse<Form[]>>,
-    next: NextFunction
-  ) {
+  static async getAllForms(_req: Request, res: Response<ApiResponse<Form[]>>, next: NextFunction) {
     try {
       const data = await FormService.getAllForms();
       res.json({
@@ -45,8 +43,9 @@ export class FormController {
     res: Response<ApiResponse<Form[]>>,
     next: NextFunction
   ) {
+    let timestamp = NaN;
     try {
-      const timestamp = parseTimestampQuery(req.query.timestamp ?? req.query.since);
+      timestamp = parseTimestampQuery(req.query.timestamp ?? req.query.since);
       const data = await FormService.getFormsSince(timestamp);
       res.json({
         success: true,
@@ -61,13 +60,7 @@ export class FormController {
         });
         return;
       }
-      if (error && typeof error === 'object' && 'message' in error) {
-        res.status(500).json({
-          success: false,
-          error: 'Database error occurred',
-        });
-        return;
-      }
+      logger.error('Error fetching forms since timestamp', { error, timestamp });
       next(error);
     }
   }

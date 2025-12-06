@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { PinController } from '../controllers/pin.controller';
 
 const router = Router();

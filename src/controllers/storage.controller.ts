@@ -1,13 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
-import { StorageService } from '../services/storage.service';
 import type { ApiResponse, StorageDeleteResult } from '@assetmapping/shared-types';
+import { Request, Response, NextFunction } from 'express';
+
+import { StorageService } from '../services/storage.service';
 
 export class StorageController {
-  static async getUploadUrl(
-    req: Request,
-    res: Response<ApiResponse<string>>,
-    next: NextFunction
-  ) {
+  static async getUploadUrl(req: Request, res: Response<ApiResponse<string>>, next: NextFunction) {
     try {
       const key = String(req.query.key || '');
       const mimeType = String(req.query.mimeType || '');
@@ -56,5 +53,4 @@ export class StorageController {
       return next(error);
     }
   }
-
 }

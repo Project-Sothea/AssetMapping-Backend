@@ -1,6 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { PinService } from '../services/pin.service';
 import type { ApiResponse, Pin } from '@assetmapping/shared-types';
+import { Request, Response, NextFunction } from 'express';
+
+import { PinService } from '../services/pin.service';
+import { logger } from '../utils/logger';
 
 type PinsSinceQuery = {
   timestamp?: string | string[];
@@ -23,11 +25,7 @@ const parseTimestampQuery = (value?: string | string[]): number => {
 };
 
 export class PinController {
-  static async getAllPins(
-    _req: Request,
-    res: Response<ApiResponse<Pin[]>>,
-    next: NextFunction
-  ) {
+  static async getAllPins(_req: Request, res: Response<ApiResponse<Pin[]>>, next: NextFunction) {
     try {
       const data = await PinService.getAllPins();
       res.json({
@@ -45,8 +43,9 @@ export class PinController {
     res: Response<ApiResponse<Pin[]>>,
     next: NextFunction
   ) {
+    let timestamp = NaN;
     try {
-      const timestamp = parseTimestampQuery(req.query.timestamp ?? req.query.since);
+      timestamp = parseTimestampQuery(req.query.timestamp ?? req.query.since);
       const data = await PinService.getPinsSince(timestamp);
       res.json({
         success: true,
@@ -61,13 +60,7 @@ export class PinController {
         });
         return;
       }
-      if (error && typeof error === 'object' && 'message' in error) {
-        res.status(500).json({
-          success: false,
-          error: 'Database error occurred',
-        });
-        return;
-      }
+      logger.error('Error fetching pins since timestamp', { error, timestamp });
       next(error);
     }
   }

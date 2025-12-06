@@ -107,5 +107,3 @@ export const forms = pgTable('forms', {
   handwashingAfterToilet: text(),
   otherHandwashingAfterToilet: text(),
 });
-
-

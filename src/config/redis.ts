@@ -1,11 +1,12 @@
 import { createClient } from 'redis';
+
 import { logger } from '../utils/logger';
+
 import { config } from './index';
 
 const redisClient = createClient({
   url: config.redis.url,
 });
-
 
 redisClient.on('error', (err) => {
   logger.error('Redis Client Error', err);
@@ -22,7 +23,6 @@ redisClient.on('ready', () => {
 redisClient.on('reconnecting', () => {
   logger.warn('Redis Client Reconnecting');
 });
-
 
 export const connectRedis = async () => {
   try {

@@ -1,8 +1,11 @@
-import { WebSocketServer, WebSocket } from 'ws';
 import { Server as HTTPServer } from 'http';
-import { logger } from '../utils/logger';
 import { parse as parseUrl } from 'url';
+
+import { WebSocketServer, WebSocket } from 'ws';
+
+import { logger } from '../utils/logger';
 import { safeJsonParse } from '../utils/parsing';
+
 import { webSocketManagerService } from './manager';
 
 export function initializeWebSocketServer(httpServer: HTTPServer): void {
@@ -23,7 +26,12 @@ export function initializeWebSocketServer(httpServer: HTTPServer): void {
       webSocketManagerService.registerConnection(userId, ws);
 
       ws.send(
-        JSON.stringify({ type: 'system', action: 'connected', timestamp: new Date().toISOString(), message: 'Connected to notification service' })
+        JSON.stringify({
+          type: 'system',
+          action: 'connected',
+          timestamp: new Date().toISOString(),
+          message: 'Connected to notification service',
+        })
       );
 
       ws.on('message', (data: Buffer) => {

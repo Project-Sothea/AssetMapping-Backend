@@ -1,13 +1,10 @@
-import { z } from 'zod';
-import { PinDB, FormDB, Pin, Form, SyncItemRequest } from '@assetmapping/shared-types';
-import { PinSelectSchema, FormSelectSchema } from '../../types';
-import { PinService } from '../pin.service';
-import { FormService } from '../form.service';
+import { SyncItemRequest, SyncResult, Pin, Form } from '@assetmapping/shared-types';
+
 import { idempotencyService } from '../infrastructure/idempotency.service';
-import { pinOperations } from './operations/pin.operations';
+
 import { formOperations } from './operations/form.operations';
+import { pinOperations } from './operations/pin.operations';
 import { syncEventPublisher } from './publishers/sync-event.publisher';
-import { normalizePayload } from './normalisation.helpers';
 
 const OPERATION_TIMEOUT_MS = 25000; // 25s (less than client's 30s timeout)
 
@@ -15,9 +12,7 @@ export class SyncService {
   /**
    * Process a sync item with idempotency and timeout
    */
-  async sync(
-    request: SyncItemRequest,
-  ): Promise<Pin | Form | { id: string; deleted: boolean }> {
+  async sync(request: SyncItemRequest): Promise<SyncResult> {
     return this.withTimeout(
       idempotencyService.processWithIdempotency(request.idempotencyKey, async () => {
         const result = await this.executeSyncOperation(request);
@@ -43,32 +38,42 @@ export class SyncService {
   /**
    * Execute the actual sync operation based on entity type and operation
    */
-  private async executeSyncOperation(
-    request: SyncItemRequest,
-  ): Promise<Pin | Form | { id: string; deleted: boolean }> {
+  private async executeSyncOperation(request: SyncItemRequest): Promise<SyncResult> {
     const { entityType, operation, payload } = request;
 
-    // Determine the schema and normalize based on it
-    let schema: z.ZodSchema;
+    const sanitizedPayload = this.sanitizePayload(payload);
+
     if (entityType === 'pin') {
-      schema = PinSelectSchema;
-    } else if (entityType === 'form') {
-      schema = FormSelectSchema;
-    } else {
-      throw new Error(`Unsupported entity type: ${entityType}`);
+      return pinOperations.syncEntity(operation, sanitizedPayload as Pin);
     }
-
-    const normalizedPayload = normalizePayload(payload, schema);
-
-    if (entityType === 'pin') {
-      const pinPayload = PinService.parsePin(normalizedPayload as PinDB);
-      return pinOperations.syncEntity(operation, pinPayload);
-    } else if (entityType === 'form') {
-      const formPayload = FormService.parseFormArrays(normalizedPayload as FormDB);
-      return formOperations.syncEntity(operation, formPayload);
+    if (entityType === 'form') {
+      return formOperations.syncEntity(operation, sanitizedPayload as Form);
     }
 
     throw new Error(`Unsupported entity type: ${entityType}`);
+  }
+
+  /**
+   * Best-effort payload sanitization to ensure Dates are Date objects
+   */
+  private sanitizePayload(payload: unknown): Pin | Form {
+    if (payload && typeof payload === 'object') {
+      const maybeDate = (value: unknown): unknown => {
+        if (value instanceof Date) return value;
+        if (typeof value === 'string') {
+          const d = new Date(value);
+          return isNaN(d.getTime()) ? value : d;
+        }
+        return value;
+      };
+
+      const normalized = { ...(payload as Record<string, unknown>) };
+      normalized.createdAt = maybeDate(normalized.createdAt);
+      normalized.updatedAt = maybeDate(normalized.updatedAt);
+      return normalized as Pin | Form;
+    }
+
+    return payload as Pin | Form;
   }
 }
 
