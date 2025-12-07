@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 
 import { FormService } from '../services/form.service';
 import { logger } from '../utils/logger';
+import { parseTimestampQuery } from '../utils/parsing';
 
 type FormsSinceQuery = {
   timestamp?: string | string[];
@@ -10,19 +11,6 @@ type FormsSinceQuery = {
 };
 
 type FormParams = { id: string } & Record<string, string>;
-
-const parseTimestampQuery = (value?: string | string[]): number => {
-  const rawValue = Array.isArray(value) ? value[0] : value;
-  if (!rawValue) {
-    return NaN;
-  }
-  const parsedFromDate = Date.parse(rawValue);
-  if (!Number.isNaN(parsedFromDate)) {
-    return parsedFromDate;
-  }
-  const parsedNumber = Number(rawValue);
-  return Number.isFinite(parsedNumber) ? parsedNumber : NaN;
-};
 
 export class FormController {
   static async getAllForms(_req: Request, res: Response<ApiResponse<Form[]>>, next: NextFunction) {

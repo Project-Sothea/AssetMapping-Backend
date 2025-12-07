@@ -20,11 +20,6 @@ export const config = {
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
   },
-
-  rateLimit: {
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
-    maxRequests: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
-  },
 };
 
 // Validate required environment variables

@@ -1,7 +1,6 @@
 import { SyncItemRequest, SyncResult, Pin, Form } from '@assetmapping/shared-types';
 
 import { idempotencyService } from './infrastructure/idempotency.service';
-
 import { formOperations } from './sync/operations/form.operations';
 import { pinOperations } from './sync/operations/pin.operations';
 import { syncEventPublisher } from './sync/publishers/sync-event.publisher';

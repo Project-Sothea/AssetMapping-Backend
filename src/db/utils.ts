@@ -95,8 +95,7 @@ export function mapFormDbToForm(form: FormDB): Form {
  */
 function jsonifyArray(value: string[]): string {
   if (Array.isArray(value)) return JSON.stringify(value);
-  if (value === undefined || value === null) return '[]';
-  return typeof value === 'string' ? value : JSON.stringify([value]);
+  else return '';
 }
 
 export function safeJsonStringParse(value: string | null): string[] {

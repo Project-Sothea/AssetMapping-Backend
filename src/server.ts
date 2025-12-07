@@ -1,5 +1,4 @@
 import express, { Application, Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 
 import { config } from './config';
@@ -11,7 +10,6 @@ import pinRoutes from './routes/pin.routes';
 import storageRoutes from './routes/storage.routes';
 import syncRoutes from './routes/sync.routes';
 import { logger } from './utils/logger';
-
 // Import routes
 import { initializeWebSocketServer } from './websocket/initializer';
 
@@ -28,18 +26,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging
 app.use(requestLogger);
-
-// Rate limiting (relaxed for non-production environments)
-const limiter = rateLimit({
-  windowMs: config.rateLimit.windowMs,
-  max: config.rateLimit.maxRequests,
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  // Skip rate limiting in development/test to avoid blocking during testing
-  skip: () => config.nodeEnv === 'development' || config.nodeEnv === 'test',
-});
-app.use('/api/', limiter);
 
 // ==================== Routes ====================
 
