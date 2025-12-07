@@ -46,20 +46,15 @@ export class FormService {
 
   static async getFormById(id: string): Promise<Form> {
     logger.info('Fetching single form', { formId: id });
-    try {
-      const data = await db.select().from(forms).where(eq(forms.id, id)).limit(1);
+    const data = await db.select().from(forms).where(eq(forms.id, id)).limit(1);
 
-      if (!data || data.length === 0) {
-        logger.warn('Form not found', { formId: id });
-        throw new Error('Form not found');
-      }
-
-      logger.info('Successfully fetched form', { formId: id });
-      return mapFormDbToForm(data[0]);
-    } catch (error) {
-      logger.error('Error fetching form', { error, formId: id });
-      throw error;
+    if (!data || data.length === 0) {
+      logger.warn('Form not found', { formId: id });
+      throw new Error('Form not found');
     }
+
+    logger.info('Successfully fetched form', { formId: id });
+    return mapFormDbToForm(data[0]);
   }
 
   /**

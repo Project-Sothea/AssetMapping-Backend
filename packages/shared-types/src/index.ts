@@ -31,7 +31,6 @@ export const FORM_ARRAY_FIELDS = [
 ] as const;
 
 export type FormArrayFieldKey = (typeof FORM_ARRAY_FIELDS)[number];
-export type FormArrayFieldKeys = FormArrayFieldKey;
 
 export type Form = Omit<FormDB, FormArrayFieldKey> & {
   [K in FormArrayFieldKey]: string[];

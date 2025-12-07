@@ -104,7 +104,7 @@ export class IdempotencyService {
 
     // Use distributed lock service to ensure only one request processes
     const lockKey = `${IDEMPOTENCY_PREFIX}lock:${key}`;
-    let lockAcquired = false;
+    let lockAcquired: boolean;
 
     try {
       lockAcquired = await distributedLockService.acquire(lockKey);

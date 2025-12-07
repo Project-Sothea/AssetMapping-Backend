@@ -48,20 +48,15 @@ export class PinService {
 
   static async getPinById(id: string): Promise<Pin> {
     logger.info('Fetching single pin', { pinId: id });
-    try {
-      const data = await db.select().from(pins).where(eq(pins.id, id)).limit(1);
+    const data = await db.select().from(pins).where(eq(pins.id, id)).limit(1);
 
-      if (!data || data.length === 0) {
-        logger.warn('Pin not found', { pinId: id });
-        throw new Error('Pin not found');
-      }
-
-      logger.info('Successfully fetched pin', { pinId: id });
-      return mapPinDbToPin(data[0]);
-    } catch (error) {
-      logger.error('Error fetching pin', { error, pinId: id });
-      throw error;
+    if (!data || data.length === 0) {
+      logger.warn('Pin not found', { pinId: id });
+      throw new Error('Pin not found');
     }
+
+    logger.info('Successfully fetched pin', { pinId: id });
+    return mapPinDbToPin(data[0]);
   }
 
   /**

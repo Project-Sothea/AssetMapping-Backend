@@ -50,60 +50,6 @@ export class DistributedLockService {
       // Don't throw - releasing a lock should be best-effort
     }
   }
-
-  /**
-   * Check if a lock exists
-   */
-  async exists(key: string): Promise<boolean> {
-    try {
-      const lockKey = `${LOCK_PREFIX}${key}`;
-      const exists = await redisClient.exists(lockKey);
-      return exists === 1;
-    } catch (error) {
-      logger.error('Error checking lock existence', { key, error });
-      throw error;
-    }
-  }
-
-  /**
-   * Extend the TTL of an existing lock
-   */
-  async extend(key: string, ttlSeconds: number): Promise<boolean> {
-    try {
-      const lockKey = `${LOCK_PREFIX}${key}`;
-      const result = await redisClient.expire(lockKey, ttlSeconds);
-
-      if (result) {
-        logger.debug('Lock TTL extended', { key, ttl: ttlSeconds });
-      }
-
-      return result;
-    } catch (error) {
-      logger.error('Error extending lock TTL', { key, error });
-      throw error;
-    }
-  }
-
-  /**
-   * Execute a function with a lock (automatically acquire and release)
-   */
-  async withLock<T>(
-    key: string,
-    handler: () => Promise<T>,
-    ttlSeconds: number = DEFAULT_TTL
-  ): Promise<T> {
-    const acquired = await this.acquire(key, ttlSeconds);
-
-    if (!acquired) {
-      throw new Error(`Failed to acquire lock: ${key}`);
-    }
-
-    try {
-      return await handler();
-    } finally {
-      await this.release(key);
-    }
-  }
 }
 
 export const distributedLockService = new DistributedLockService();
