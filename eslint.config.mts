@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint';
 export default defineConfig([
   eslintPluginPrettierRecommended,
   {
-    ignores: ['dist/*'],
+    ignores: ['dist/**', 'packages/*/dist/**'],
   },
   {
     files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],

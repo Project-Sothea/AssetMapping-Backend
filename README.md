@@ -1,4 +1,5 @@
 # Asset Mapping Backend
+
 ### Last Updated: 12 Apr, 2026
 
 ## Overview
@@ -40,18 +41,18 @@ Before you begin, ensure you have the following installed:
 
 Copy `.env.example` to `.env` and fill in the required values:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3000` | Express server port |
-| `NODE_ENV` | `development` | Environment (`development` / `production`) |
-| `DATABASE_URL` | `postgres://postgres:postgres123@localhost:55432/assetmapping` | PostgreSQL connection string |
-| `REDIS_URL` | `redis://localhost:6379/0` | Redis connection string |
-| `MAX_IMAGE_SIZE_MB` | `10` | Maximum image upload size in MB |
-| `AWS_ENDPOINT_URL` | — | S3 endpoint or CDN base URL |
-| `AWS_S3_BUCKET_NAME` | `asset-mapping` | S3 bucket name |
-| `AWS_DEFAULT_REGION` | `us-east-1` | AWS region |
-| `AWS_ACCESS_KEY_ID` | — | AWS access key |
-| `AWS_SECRET_ACCESS_KEY` | — | AWS secret key |
+| Variable                | Default                                                        | Description                                |
+| ----------------------- | -------------------------------------------------------------- | ------------------------------------------ |
+| `PORT`                  | `3000`                                                         | Express server port                        |
+| `NODE_ENV`              | `development`                                                  | Environment (`development` / `production`) |
+| `DATABASE_URL`          | `postgres://postgres:postgres123@localhost:55432/assetmapping` | PostgreSQL connection string               |
+| `REDIS_URL`             | `redis://localhost:6379/0`                                     | Redis connection string                    |
+| `MAX_IMAGE_SIZE_MB`     | `10`                                                           | Maximum image upload size in MB            |
+| `AWS_ENDPOINT_URL`      | —                                                              | S3 endpoint or CDN base URL                |
+| `AWS_S3_BUCKET_NAME`    | `asset-mapping`                                                | S3 bucket name                             |
+| `AWS_DEFAULT_REGION`    | `us-east-1`                                                    | AWS region                                 |
+| `AWS_ACCESS_KEY_ID`     | —                                                              | AWS access key                             |
+| `AWS_SECRET_ACCESS_KEY` | —                                                              | AWS secret key                             |
 
 ---
 
@@ -115,6 +116,7 @@ The backend receives sync operations from mobile clients via a single `POST /api
 **Circuit Breaker:** If Redis is unavailable, the idempotency layer degrades gracefully and the operation proceeds — database constraints ensure correctness.
 
 **Version Conflict Resolution:** Each entity has an integer `version` field. When the client submits an operation:
+
 - If the client version matches the server version, the operation is applied and the version is incremented.
 - If the client version is behind the server version, `updatedAt` timestamps are compared and the latest write wins.
 
@@ -129,6 +131,7 @@ The sync request shape:
 ```
 
 Key sync files:
+
 - `src/services/sync.service.ts` — orchestrates the full sync lifecycle
 - `src/services/infrastructure/idempotency.service.ts` — Redis-backed idempotency with circuit breaker
 - `src/services/infrastructure/distributed-lock.service.ts` — Redis locks
