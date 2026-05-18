@@ -15,6 +15,13 @@
       "when": 1779080196167,
       "tag": "0001_gray_stone_men",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779083194219,
+      "tag": "0002_lively_viper",
+      "breakpoints": true
     }
   ]
 }
