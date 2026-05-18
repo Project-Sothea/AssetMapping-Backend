@@ -1,6 +1,6 @@
 {
-  "id": "31c3de9a-08e0-4934-8194-f0ed904701ad",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "43867f36-a26c-4a20-b7ca-0d06ab385a85",
+  "prevId": "31c3de9a-08e0-4934-8194-f0ed904701ad",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -39,7 +39,7 @@
           "name": "pinId",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "status": {
           "name": "status",
@@ -65,6 +65,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "householdNumber": {
+          "name": "householdNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "gender": {
           "name": "gender",
           "type": "text",
@@ -80,6 +86,30 @@
         "canAttendHealthScreening": {
           "name": "canAttendHealthScreening",
           "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictHealthcareAccess": {
+          "name": "conflictHealthcareAccess",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictHealthManagement": {
+          "name": "conflictHealthManagement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictCleanWaterAccess": {
+          "name": "conflictCleanWaterAccess",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictCostOfLiving": {
+          "name": "conflictCostOfLiving",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
@@ -413,6 +443,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "waterHealthConsequences": {
+          "name": "waterHealthConsequences",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterSocioeconomicConsequences": {
+          "name": "waterSocioeconomicConsequences",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "waterFilterAwareness": {
           "name": "waterFilterAwareness",
           "type": "text",
@@ -421,6 +463,12 @@
         },
         "otherWaterFilterAwareness": {
           "name": "otherWaterFilterAwareness",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterFilterExperience": {
+          "name": "waterFilterExperience",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -445,6 +493,24 @@
         },
         "otherHandwashingAfterToilet": {
           "name": "otherHandwashingAfterToilet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "handwashingBeforeMeals": {
+          "name": "handwashingBeforeMeals",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "handwashingBeforeMealsReason": {
+          "name": "handwashingBeforeMealsReason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pressingHealthNeed": {
+          "name": "pressingHealthNeed",
           "type": "text",
           "primaryKey": false,
           "notNull": false

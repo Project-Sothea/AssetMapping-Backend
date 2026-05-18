@@ -11,6 +11,7 @@ export const FORM_ARRAY_FIELDS = [
   'managementMethods',
   'conditionDifficultyReasons',
   'selfCareActions',
+  'medicinePurchaseLocations',
   'noToothbrushOrToothpasteReasons',
   'diarrhoeaDefinition',
   'diarrhoeaActions',
