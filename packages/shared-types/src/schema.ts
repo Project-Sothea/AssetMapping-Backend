@@ -39,6 +39,7 @@ export const forms = pgTable('forms', {
   name: text().notNull(),
   village: text().notNull(),
   otherVillage: text(),
+  dataCollectionDate: text(),
   householdNumber: text(),
   gender: text(),
   age: integer(),

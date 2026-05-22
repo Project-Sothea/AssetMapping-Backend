@@ -1,0 +1,656 @@
+{
+  "id": "aeba6143-b51b-46b5-b71b-df4eaba222af",
+  "prevId": "22b84841-f3fd-47b6-b4ad-eb5eb871bd33",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.forms": {
+      "name": "forms",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "pinId": {
+          "name": "pinId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "villageId": {
+          "name": "villageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "village": {
+          "name": "village",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "otherVillage": {
+          "name": "otherVillage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dataCollectionDate": {
+          "name": "dataCollectionDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "householdNumber": {
+          "name": "householdNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gender": {
+          "name": "gender",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "age": {
+          "name": "age",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "canAttendHealthScreening": {
+          "name": "canAttendHealthScreening",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictHealthcareAccess": {
+          "name": "conflictHealthcareAccess",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictHealthManagement": {
+          "name": "conflictHealthManagement",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictCleanWaterAccess": {
+          "name": "conflictCleanWaterAccess",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conflictCostOfLiving": {
+          "name": "conflictCostOfLiving",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "longTermConditions": {
+          "name": "longTermConditions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherLongTermConditions": {
+          "name": "otherLongTermConditions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "managementMethods": {
+          "name": "managementMethods",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherManagementMethods": {
+          "name": "otherManagementMethods",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conditionDifficultyReasons": {
+          "name": "conditionDifficultyReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherConditionDifficultyReasons": {
+          "name": "otherConditionDifficultyReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "selfCareActions": {
+          "name": "selfCareActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherSelfCareActions": {
+          "name": "otherSelfCareActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "knowWhereToFindDoctor": {
+          "name": "knowWhereToFindDoctor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherKnowWhereToFindDoctor": {
+          "name": "otherKnowWhereToFindDoctor",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "transportToClinic": {
+          "name": "transportToClinic",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherTransportToClinic": {
+          "name": "otherTransportToClinic",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "medicinePurchaseLocations": {
+          "name": "medicinePurchaseLocations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherMedicinePurchaseLocations": {
+          "name": "otherMedicinePurchaseLocations",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "povertyCardSchemeAwareness": {
+          "name": "povertyCardSchemeAwareness",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherPovertyCardSchemeAwareness": {
+          "name": "otherPovertyCardSchemeAwareness",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "povertyCardNonUseReasons": {
+          "name": "povertyCardNonUseReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "toothBrushingFrequency": {
+          "name": "toothBrushingFrequency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherToothBrushingFrequency": {
+          "name": "otherToothBrushingFrequency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "toothbrushAndToothpasteSource": {
+          "name": "toothbrushAndToothpasteSource",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "noToothbrushOrToothpasteReasons": {
+          "name": "noToothbrushOrToothpasteReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherNoToothbrushOrToothpasteReasons": {
+          "name": "otherNoToothbrushOrToothpasteReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diarrhoeaDefinition": {
+          "name": "diarrhoeaDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherDiarrhoeaDefinition": {
+          "name": "otherDiarrhoeaDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diarrhoeaActions": {
+          "name": "diarrhoeaActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherDiarrhoeaActions": {
+          "name": "otherDiarrhoeaActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "commonColdSymptoms": {
+          "name": "commonColdSymptoms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherCommonColdSymptoms": {
+          "name": "otherCommonColdSymptoms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "commonColdActions": {
+          "name": "commonColdActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherCommonColdActions": {
+          "name": "otherCommonColdActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mskInjuryDefinition": {
+          "name": "mskInjuryDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherMskInjuryDefinition": {
+          "name": "otherMskInjuryDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mskInjuryActions": {
+          "name": "mskInjuryActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherMskInjuryActions": {
+          "name": "otherMskInjuryActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hypertensionDefinition": {
+          "name": "hypertensionDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherHypertensionDefinition": {
+          "name": "otherHypertensionDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hypertensionActions": {
+          "name": "hypertensionActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherHypertensionActions": {
+          "name": "otherHypertensionActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "healthyFoodFrequency": {
+          "name": "healthyFoodFrequency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherHealthyFoodFrequency": {
+          "name": "otherHealthyFoodFrequency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unhealthyFoodReasons": {
+          "name": "unhealthyFoodReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherUnhealthyFoodReasons": {
+          "name": "otherUnhealthyFoodReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "highCholesterolDefinition": {
+          "name": "highCholesterolDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherHighCholesterolDefinition": {
+          "name": "otherHighCholesterolDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "highCholesterolActions": {
+          "name": "highCholesterolActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherHighCholesterolActions": {
+          "name": "otherHighCholesterolActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diabetesDefinition": {
+          "name": "diabetesDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherDiabetesDefinition": {
+          "name": "otherDiabetesDefinition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diabetesActions": {
+          "name": "diabetesActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherDiabetesActions": {
+          "name": "otherDiabetesActions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherLearningAreas": {
+          "name": "otherLearningAreas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterSources": {
+          "name": "waterSources",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherWaterSources": {
+          "name": "otherWaterSources",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "unsafeWaterTypes": {
+          "name": "unsafeWaterTypes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherUnsafeWaterTypes": {
+          "name": "otherUnsafeWaterTypes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterHealthConsequences": {
+          "name": "waterHealthConsequences",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterSocioeconomicConsequences": {
+          "name": "waterSocioeconomicConsequences",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterFilterAwareness": {
+          "name": "waterFilterAwareness",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherWaterFilterAwareness": {
+          "name": "otherWaterFilterAwareness",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterFilterExperience": {
+          "name": "waterFilterExperience",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "waterFilterNonUseReasons": {
+          "name": "waterFilterNonUseReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherWaterFilterNonUseReasons": {
+          "name": "otherWaterFilterNonUseReasons",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "handwashingAfterToilet": {
+          "name": "handwashingAfterToilet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "otherHandwashingAfterToilet": {
+          "name": "otherHandwashingAfterToilet",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "handwashingBeforeMeals": {
+          "name": "handwashingBeforeMeals",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "handwashingBeforeMealsReason": {
+          "name": "handwashingBeforeMealsReason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pressingHealthNeed": {
+          "name": "pressingHealthNeed",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "forms_pinId_pins_id_fk": {
+          "name": "forms_pinId_pins_id_fk",
+          "tableFrom": "forms",
+          "tableTo": "pins",
+          "columnsFrom": ["pinId"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pins": {
+      "name": "pins",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lat": {
+          "name": "lat",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lng": {
+          "name": "lng",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cityVillage": {
+          "name": "cityVillage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "images": {
+          "name": "images",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
