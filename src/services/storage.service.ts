@@ -13,7 +13,7 @@ function getS3Client(): S3Client {
   return new S3Client({
     region: config.images.s3.region,
     endpoint: config.images.s3.endpoint,
-    forcePathStyle: true,
+    forcePathStyle: false,
     credentials: {
       accessKeyId: String(config.images.s3.accessKeyId),
       secretAccessKey: String(config.images.s3.secretAccessKey),
