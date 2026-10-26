@@ -409,7 +409,13 @@ test('two SQLite devices keep the losing edit locally rather than silently overw
     const ops = [a, b].map((f) =>
       f.operations().find((op: any) => op.entityType === 'form' && op.status !== 'completed')
     );
-    assert.equal(ops.filter((op) => op?.status === 'failed').length, 1);
+    // A manual session can block the child after its parent pin loses the race.
+    // The losing form must remain outstanding, whether failed itself or pending
+    // with a parent/revision error; it must never be marked completed.
+    assert.equal(ops.filter(Boolean).length, 1);
+    const pending = ops.find(Boolean);
+    assert.ok(['pending', 'failed'].includes(pending.status));
+    assert.ok(pending.lastError);
     assert.equal((await a.formService.getFormById(form.id)).name, 'QA device A edit');
     assert.equal((await b.formService.getFormById(form.id)).name, 'QA device B edit');
     await a.pulls.pullSnapshot();
