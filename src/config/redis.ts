@@ -6,6 +6,11 @@ import { config } from './index';
 
 const redisClient = createClient({
   url: config.redis.url,
+  disableOfflineQueue: true,
+  socket: {
+    reconnectStrategy: (attempt) =>
+      attempt >= 3 ? new Error('Optional Redis unavailable') : Math.min(250 * 2 ** attempt, 2000),
+  },
 });
 
 redisClient.on('error', (err) => {
@@ -36,7 +41,7 @@ export const connectRedis = async () => {
 
 export const disconnectRedis = async () => {
   try {
-    await redisClient.quit();
+    if (redisClient.isOpen) await redisClient.quit();
     logger.info('Redis connection closed');
   } catch (error) {
     logger.error('Error disconnecting from Redis', error);

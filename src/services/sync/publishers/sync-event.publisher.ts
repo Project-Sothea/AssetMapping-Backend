@@ -46,6 +46,7 @@ export class SyncEventPublisher {
     // Transform to notification payload (same shape used by consumer previously)
     const notification: SyncNotification = {
       type: event.entityType,
+      deviceId: request.deviceId,
       action: this.getAction(event.eventType),
       eventId: event.eventId,
       aggregateId: event.entityId,

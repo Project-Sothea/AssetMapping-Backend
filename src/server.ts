@@ -39,6 +39,19 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+// Old mobile versions can discard drafts when handling version conflicts.
+// Fail closed before any old client can push or download over its local data.
+app.use('/api', (req, res, next) => {
+  if (req.get('X-SoForm-Sync-Protocol') !== '2') {
+    res.status(426).json({
+      success: false,
+      error: 'App update required. Keep your local data and update SoForm before syncing.',
+    });
+    return;
+  }
+  next();
+});
+
 // API routes
 app.use('/api/sync', syncRoutes);
 app.use('/api/pins', pinRoutes);
@@ -58,15 +71,22 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     // Connect to Redis
-    await connectRedis();
-    logger.info('✓ Redis connected');
+    // Core sync receipts live in PostgreSQL; an optional cache outage must not
+    // prevent the API from starting or bypass its durability guarantees.
+    connectRedis()
+      .then(() => logger.info('✓ Redis connected'))
+      .catch(() => logger.warn('Redis unavailable; durable PostgreSQL sync remains enabled.'));
 
     // Start Express server
-    const server = app.listen(config.port, () => {
+    const onListening = () => {
       logger.info(`✓ Server running on port ${config.port}`);
       logger.info(`✓ Environment: ${config.nodeEnv}`);
       logger.info(`✓ Health check: http://localhost:${config.port}/health`);
-    });
+    };
+    const server =
+      config.nodeEnv === 'qa'
+        ? app.listen(config.port, '127.0.0.1', onListening)
+        : app.listen(config.port, onListening);
 
     // Initialize WebSocket server for real-time notifications
     initializeWebSocketServer(server);

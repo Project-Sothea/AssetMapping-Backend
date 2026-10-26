@@ -87,6 +87,7 @@ export interface SyncNotificationPayload {
 }
 
 export interface SyncNotification {
+  deviceId?: string;
   type: EntityType;
   action: SyncAction;
   eventId: string;

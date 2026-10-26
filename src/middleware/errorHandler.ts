@@ -1,15 +1,16 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 import { AppError } from '../types';
 import { logger } from '../utils/logger';
 
-export const errorHandler = (err: Error | AppError, req: Request, res: Response) => {
-  logger.error('Error occurred:', {
-    message: err.message,
-    stack: err.stack,
-    path: req.path,
-    method: req.method,
-  });
+export const errorHandler = (
+  err: Error | AppError,
+  req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
+  void _next; // Express recognises error middleware by its four-argument arity.
+  logger.error('Request failed', { name: err.name, path: req.path, method: req.method });
 
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
@@ -20,15 +21,11 @@ export const errorHandler = (err: Error | AppError, req: Request, res: Response)
     });
   }
 
-  // Unknown errors
-  return res.status(500).json({
+  const status = (err as Error & { status?: number }).status;
+  return res.status(status && status >= 400 && status < 500 ? status : 500).json({
     success: false,
-    error: 'Internal server error',
-    message: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && {
-      message: err.message,
-      stack: err.stack,
-    }),
+    error:
+      status && status >= 400 && status < 500 ? 'Invalid request body' : 'Internal server error',
   });
 };
 
