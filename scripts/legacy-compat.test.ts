@@ -112,10 +112,10 @@ async function device(t: any) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
-  const f = fixture(':memory:', { legacy: true, apiUrl: baseUrl, pinId: id });
+  const f = fixture(':memory:', { apiUrl: baseUrl, pinId: id });
   t.after(f.close);
   f.db.delete(f.schema.pins).run();
-  await f.load('services/sync/syncService.ts').performFullSync();
+  await f.load('services/sync/localDataTransfer.ts').downloadLatest();
   assert.ok(
     f.db
       .select()
@@ -142,7 +142,7 @@ test('blank/NULL/false/zero answers create, edit, retry and download through the
     age: 0,
     canAttendHealthScreening: false,
   });
-  await f.syncQueue.processQueue();
+  await f.syncQueue.uploadPendingChanges();
   assert.equal((await f.formService.getFormById(local.id)).status, 'synced');
   let [stored] = await sql`SELECT * FROM forms WHERE id=${local.id}`;
   assert.equal(stored.name, '');
@@ -155,15 +155,18 @@ test('blank/NULL/false/zero answers create, edit, retry and download through the
     age: null,
     handwashingBeforeMeals: 'QA preserved response',
   });
-  await f.syncQueue.processQueue();
+  await f.syncQueue.uploadPendingChanges();
   [stored] = await sql`SELECT * FROM forms WHERE id=${local.id}`;
   assert.equal(stored.householdNumber, null);
   assert.equal(stored.age, null);
   const before = stored.version;
-  await f.syncQueue.processQueue();
+  await f.syncQueue.uploadPendingChanges();
   [stored] = await sql`SELECT * FROM forms WHERE id=${local.id}`;
   assert.equal(stored.version, before);
-  await f.pulls.pullLegacyCollections();
+  const transfer = f.load('services/sync/localDataTransfer.ts');
+  await transfer.clearLocalData();
+  assert.equal(await f.formService.getFormById(local.id), null);
+  await transfer.downloadLatest();
   assert.equal(
     (await f.formService.getFormById(local.id)).handwashingBeforeMeals,
     'QA preserved response'
@@ -176,7 +179,7 @@ test('a committed create with lost reply is recovered by content without another
   const op = f.operations().find((o: any) => o.entityType === 'form');
   f.queue.stageOperation(op);
   await serverSync(JSON.parse(op.payload), 'create', 'form', op.idempotencyKey);
-  await f.syncQueue.processQueue();
+  await f.syncQueue.uploadPendingChanges();
   const [row] = await sql`SELECT version FROM forms WHERE id=${local.id}`;
   assert.equal(row.version, 1);
   assert.equal((await f.formService.getFormById(local.id)).status, 'synced');
@@ -186,30 +189,32 @@ test('a committed create with lost reply is recovered by content without another
 test('known remote edits block stale uploads while preserving the local draft', async (t) => {
   const f = await device(t);
   const form = await f.formService.createForm(f.values);
-  await f.syncQueue.processQueue();
+  await f.syncQueue.uploadPendingChanges();
   const remote = (await (await fetch(baseUrl + '/api/forms/' + form.id)).json()).data;
   await serverSync({ ...remote, name: 'QA other phone edit' }, 'update', 'form');
   await f.formService.updateForm(form.id, { name: 'QA protected local draft' });
-  await f.syncQueue.processQueue();
+  await f.syncQueue.uploadPendingChanges();
   assert.equal((await f.formService.getFormById(form.id)).name, 'QA protected local draft');
   assert.equal((await f.formService.getFormById(form.id)).status, 'unsynced');
   const [row] = await sql`SELECT name FROM forms WHERE id=${form.id}`;
   assert.equal(row.name, 'QA other phone edit');
 });
 
-test('offline missed deletion is reconciled through confirmed existing GET routes', async (t) => {
+test('manual clearing and empty-device download reflect an offline server deletion', async (t) => {
   const f = await device(t);
   const form = await f.formService.createForm(f.values);
-  await f.syncQueue.processQueue();
+  await f.syncQueue.uploadPendingChanges();
   await serverSync({ id: form.id, version: 1 }, 'delete', 'form');
-  await f.pulls.pullLegacyCollections();
+  const transfer = f.load('services/sync/localDataTransfer.ts');
+  await transfer.clearLocalData();
+  await transfer.downloadLatest();
   assert.equal(await f.formService.getFormById(form.id), null);
 });
 
 test('documents the remaining check-then-write race on the unchanged server', async (t) => {
   const first = await device(t);
   const original = await first.formService.createForm(first.values);
-  await first.syncQueue.processQueue();
+  await first.syncQueue.uploadPendingChanges();
   let checked = 0,
     releaseChecks: () => void;
   const bothChecked = new Promise<void>((resolve) => {
@@ -221,7 +226,6 @@ test('documents the remaining check-then-write race on the unchanged server', as
   });
   function racingDevice(label: string, clientTime: string) {
     const f = fixture(':memory:', {
-      legacy: true,
       apiUrl: baseUrl,
       pinId: first.pin.id,
       overrides: {
@@ -250,14 +254,14 @@ test('documents the remaining check-then-write race on the unchanged server', as
   const devices = [racingDevice('A', '2080-01-01'), racingDevice('B', '2090-01-01')];
   for (const { f, label, clientTime } of devices) {
     f.db.delete(f.schema.pins).run();
-    await f.pulls.pullLegacyCollections();
+    await f.load('services/sync/localDataTransfer.ts').downloadLatest();
     await f.formService.updateForm(original.id, { name: 'QA concurrent ' + label });
     const op = f.operations().find((o: any) => o.entityType === 'form');
     f.sqlite
       .prepare('UPDATE sync_queue SET payload=? WHERE id=?')
       .run(JSON.stringify({ ...JSON.parse(op.payload), updatedAt: clientTime }), op.id);
   }
-  await Promise.all(devices.map(({ f }) => f.syncQueue.processQueue()));
+  await Promise.all(devices.map(({ f }) => f.syncQueue.uploadPendingChanges()));
   const [row] = await sql`SELECT name,version FROM forms WHERE id=${original.id}`;
   assert.equal(row.name, 'QA concurrent B');
   assert.equal(row.version, 3);
