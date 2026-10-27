@@ -7,6 +7,8 @@ packages/*/dist/
 
 # Environment variables
 .env
+.env.qa
+.qa-data/
 .env.local
 .env.*.local
 

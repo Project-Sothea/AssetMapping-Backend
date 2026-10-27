@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+dotenv.config({ path: process.env.NODE_ENV === 'qa' ? '.env.qa' : '.env' });
 
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),

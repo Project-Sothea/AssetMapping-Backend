@@ -1,4 +1,14 @@
-import { pgTable, uuid, text, boolean, real, integer, timestamp } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  text,
+  boolean,
+  real,
+  integer,
+  timestamp,
+  jsonb,
+  primaryKey,
+} from 'drizzle-orm/pg-core';
 
 export const pins = pgTable('pins', {
   // Metadata
@@ -124,3 +134,23 @@ export const forms = pgTable('forms', {
   handwashingBeforeMealsReason: text(),
   pressingHealthNeed: text(),
 });
+
+// A receipt commits with its entity write. Redis is never the correctness boundary.
+export const syncReceipts = pgTable('sync_receipts', {
+  key: text('idempotency_key').primaryKey(),
+  requestHash: text('request_hash').notNull(),
+  response: jsonb().notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// Prevent an old offline create/update from resurrecting a deleted UUID.
+export const syncDeletions = pgTable(
+  'sync_deletions',
+  {
+    entityType: text('entity_type').notNull(),
+    entityId: uuid('entity_id').notNull(),
+    version: integer().notNull(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.entityType, table.entityId] })]
+);

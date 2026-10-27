@@ -8,12 +8,17 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "dev:qa": "NODE_ENV=qa tsx watch src/server.ts",
     "build": "npm run build:types && tsc",
     "build:types": "npm run build --workspace @assetmapping/shared-types",
     "start": "node dist/server.js",
     "migrate": "npx drizzle-kit migrate",
+    "migrate:qa": "NODE_ENV=qa drizzle-kit migrate",
+    "seed:qa": "NODE_ENV=qa node scripts/seed-qa.mjs",
     "lint": "eslint . && prettier -c .",
-    "format": "eslint . --fix && prettier -w ."
+    "format": "eslint . --fix && prettier -w .",
+    "test:system": "node --import tsx --test scripts/sync-system.test.ts",
+    "test:legacy": "node --import tsx --test scripts/legacy-compat.test.ts"
   },
   "keywords": [
     "asset-mapping",
