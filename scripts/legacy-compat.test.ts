@@ -112,7 +112,7 @@ async function device(t: any) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   });
-  const f = fixture(':memory:', { apiUrl: baseUrl, pinId: id });
+  const f = fixture(':memory:', { legacy: true, apiUrl: baseUrl, pinId: id });
   t.after(f.close);
   f.db.delete(f.schema.pins).run();
   await f.load('services/sync/localDataTransfer.ts').downloadLatest();
@@ -226,6 +226,7 @@ test('documents the remaining check-then-write race on the unchanged server', as
   });
   function racingDevice(label: string, clientTime: string) {
     const f = fixture(':memory:', {
+      legacy: true,
       apiUrl: baseUrl,
       pinId: first.pin.id,
       overrides: {
