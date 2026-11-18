@@ -1,4 +1,4 @@
-import { forms, Form } from '@assetmapping/shared-types';
+import { forms, pins, Form } from '@assetmapping/shared-types';
 import { eq, desc, gte } from 'drizzle-orm'; // Import Drizzle query helpers
 
 import { db } from '../db'; // Import the Drizzle db instance
@@ -74,17 +74,23 @@ export class FormService {
    */
   static async upsertForm(data: Form, version: number): Promise<Form> {
     const formData = sanitizeFormForDb(data, version);
-
     try {
-      const result = await db
-        .insert(forms)
-        .values(formData)
-        .onConflictDoUpdate({
-          target: forms.id,
-          set: formData,
-        })
-        .returning();
-
+      const result = await db.transaction(async (tx) => {
+        const [parent] = await tx.select().from(pins).where(eq(pins.id, data.pinId)).for('share');
+        if (!parent) throw new Error('The parent pin is missing.');
+        const [existing] = await tx
+          .select({ pinId: forms.pinId })
+          .from(forms)
+          .where(eq(forms.id, data.id));
+        if ((!existing || existing.pinId !== data.pinId) && !parent.cityVillage?.trim()) {
+          throw new Error('Choose a village on the pin before adding a form.');
+        }
+        return tx
+          .insert(forms)
+          .values(formData)
+          .onConflictDoUpdate({ target: forms.id, set: formData })
+          .returning();
+      });
       return mapFormDbToForm(result[0]);
     } catch (error) {
       logger.error('Error upserting form', { error, data });

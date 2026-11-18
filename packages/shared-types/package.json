@@ -11,6 +11,10 @@
     "./schema": {
       "types": "./dist/schema.d.ts",
       "default": "./dist/schema.js"
+    },
+    "./villages": {
+      "types": "./dist/villages.d.ts",
+      "default": "./dist/villages.js"
     }
   },
   "typesVersions": {

@@ -1,3 +1,4 @@
+export { PIN_VILLAGES, assertPinVillage } from './villages';
 import { forms, pins } from './schema';
 export { forms, pins } from './schema';
 

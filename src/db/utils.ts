@@ -32,7 +32,7 @@ export function mapPinDbToPin(pin: PinDB): Pin {
  */
 export function sanitizeFormForDb(form: Form, version: number): FormDB {
   return {
-    ...form,
+    ...formWriteValues(form),
     version,
 
     // Health
@@ -67,7 +67,7 @@ export function sanitizeFormForDb(form: Form, version: number): FormDB {
 
 export function mapFormDbToForm(form: FormDB): Form {
   return {
-    ...form,
+    ...formWriteValues(form),
     longTermConditions: safeJsonStringParse(form.longTermConditions),
     managementMethods: safeJsonStringParse(form.managementMethods),
     conditionDifficultyReasons: safeJsonStringParse(form.conditionDifficultyReasons),
@@ -108,4 +108,16 @@ export function safeJsonStringParse(value: string | null): string[] {
   } catch {
     return [];
   }
+}
+
+export function formWriteValues<T extends object>(value: T): T {
+  const current = { ...value } as T & {
+    village?: unknown;
+    otherVillage?: unknown;
+    pinVillage?: unknown;
+  };
+  delete current.village;
+  delete current.otherVillage;
+  delete current.pinVillage;
+  return current;
 }

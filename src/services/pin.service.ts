@@ -1,4 +1,5 @@
 import { pins, Pin } from '@assetmapping/shared-types';
+import { assertPinVillage } from '@assetmapping/shared-types/villages';
 import { eq, desc, gte } from 'drizzle-orm'; // Import Drizzle query helpers
 
 import { db } from '../db'; // Import the Drizzle db instance
@@ -116,6 +117,12 @@ export class PinService {
    * Upsert a pin with version and conflict resolution
    */
   static async upsertPin(data: Pin, version: number): Promise<Pin> {
+    const [existing] = await db
+      .select({ cityVillage: pins.cityVillage })
+      .from(pins)
+      .where(eq(pins.id, data.id))
+      .limit(1);
+    assertPinVillage(data.cityVillage, !!existing && !existing.cityVillage);
     const pinData = sanitizePinForDb(data, version);
 
     try {

@@ -37,8 +37,6 @@ export const forms = pgTable('forms', {
   // General
   villageId: text().notNull(),
   name: text().notNull(),
-  village: text().notNull(),
-  otherVillage: text(),
   dataCollectionDate: text(),
   householdNumber: text(),
   gender: text(),
@@ -123,4 +121,12 @@ export const forms = pgTable('forms', {
   handwashingBeforeMeals: text(),
   handwashingBeforeMealsReason: text(),
   pressingHealthNeed: text(),
+});
+
+// Preserves pre-migration values for rollback; excluded from the form API.
+export const formVillageArchive = pgTable('form_village_archive', {
+  formId: uuid().primaryKey(),
+  village: text(),
+  otherVillage: text(),
+  pinVillage: text(),
 });
