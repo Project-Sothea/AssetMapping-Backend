@@ -27,12 +27,17 @@ try {
     await sql.unsafe(readFileSync(new URL(`${entry.tag}.sql`, folder), 'utf8'));
   }
   const snapshot = {};
+  const legacySnapshot = process.env.TEST_LEGACY_SNAPSHOT
+    ? JSON.parse(readFileSync(process.env.TEST_LEGACY_SNAPSHOT, 'utf8'))
+    : undefined;
   for (const table of ['pins', 'forms']) {
-    const response = await fetch(
-      `https://assetmapping-app-test-migration-test.up.railway.app/api/${table}`
-    );
-    assert(response.ok);
-    const result = await response.json();
+    const response = legacySnapshot
+      ? undefined
+      : await fetch(`https://assetmapping-app-test-migration-test.up.railway.app/api/${table}`);
+    if (response) assert(response.ok);
+    const result = legacySnapshot
+      ? { success: true, data: legacySnapshot[table] }
+      : await response.json();
     assert.equal(result.success, true);
     assert(Array.isArray(result.data));
     snapshot[table] = result.data;

@@ -4,6 +4,7 @@ import { eq, desc, gte } from 'drizzle-orm'; // Import Drizzle query helpers
 
 import { db } from '../db'; // Import the Drizzle db instance
 import { mapPinDbToPin, sanitizePinForDb, safeJsonStringParse } from '../db/utils';
+import { AppError } from '../types';
 import { logger } from '../utils/logger';
 
 import { StorageService } from './storage.service';
@@ -122,7 +123,11 @@ export class PinService {
       .from(pins)
       .where(eq(pins.id, data.id))
       .limit(1);
-    assertPinVillage(data.cityVillage, !!existing && !existing.cityVillage);
+    try {
+      assertPinVillage(data.cityVillage, !!existing && !existing.cityVillage);
+    } catch (error) {
+      throw new AppError(400, error instanceof Error ? error.message : 'Choose a village.');
+    }
     const pinData = sanitizePinForDb(data, version);
 
     try {

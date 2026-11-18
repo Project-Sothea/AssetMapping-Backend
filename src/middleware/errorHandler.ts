@@ -1,9 +1,15 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 import { AppError } from '../types';
 import { logger } from '../utils/logger';
 
-export const errorHandler = (err: Error | AppError, req: Request, res: Response) => {
+export const errorHandler = (
+  err: Error | AppError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (res.headersSent) return next(err);
   logger.error('Error occurred:', {
     message: err.message,
     stack: err.stack,

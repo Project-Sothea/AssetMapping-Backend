@@ -30,4 +30,4 @@ node --test tests/village-contract.test.mjs
 TEST_DATABASE_URL=postgres://127.0.0.1:55434/empty_database node scripts/test-village-migration.mjs
 ```
 
-This test refuses nonempty databases. It exercises full-data preservation, conflicting/changed baseline refusal, failure after backup, retry, idempotence, rollback, reapply, new-form preservation and post-migration parent-village edits. It fetches the legacy baseline API, so run it before the remote rollout or supply a separately restored legacy test dataset.
+This test refuses nonempty databases. It exercises full-data preservation, conflicting/changed baseline refusal, failure after backup, retry, idempotence, rollback, reapply, new-form preservation and post-migration parent-village edits. Before rollout it can fetch the legacy baseline API. After rollout, set `TEST_LEGACY_SNAPSHOT=/private/path/to/legacy-snapshot.json` to seed the same audited legacy snapshot instead. Keep survey data outside the repository and restrict file access.

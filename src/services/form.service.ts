@@ -3,6 +3,7 @@ import { eq, desc, gte } from 'drizzle-orm'; // Import Drizzle query helpers
 
 import { db } from '../db'; // Import the Drizzle db instance
 import { mapFormDbToForm, sanitizeFormForDb } from '../db/utils';
+import { AppError } from '../types';
 import { logger } from '../utils/logger';
 
 export class FormService {
@@ -77,13 +78,13 @@ export class FormService {
     try {
       const result = await db.transaction(async (tx) => {
         const [parent] = await tx.select().from(pins).where(eq(pins.id, data.pinId)).for('share');
-        if (!parent) throw new Error('The parent pin is missing.');
+        if (!parent) throw new AppError(400, 'The parent pin is missing.');
         const [existing] = await tx
           .select({ pinId: forms.pinId })
           .from(forms)
           .where(eq(forms.id, data.id));
         if ((!existing || existing.pinId !== data.pinId) && !parent.cityVillage?.trim()) {
-          throw new Error('Choose a village on the pin before adding a form.');
+          throw new AppError(400, 'Choose a village on the pin before adding a form.');
         }
         return tx
           .insert(forms)
