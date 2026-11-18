@@ -2,6 +2,8 @@
 
 Only the audited **migration-test** app/database may run these scripts remotely. Production is deliberately rejected by host, environment ID, service ID and complete dataset fingerprint. Do not replace the fingerprint to bypass a failed audit.
 
+The original API and direct SQL fingerprints are both recorded. A read-only deployment audit (`80d21412-3667-4901-a5bd-bf190008d2c4`) verified that their only differences are NULL array-answer columns decoded as `[]` by the API. Remote migration requires the exact raw SQL fingerprint, preserving that distinction; localhost rehearsals use the API fingerprint because their rows were seeded from the decoded API. `audit-village-baseline.mjs` is diagnostic only and intentionally exits before migration/startup.
+
 Forward migration (Railway pre-deploy, using the service's existing DATABASE_URL):
 
 ```sh

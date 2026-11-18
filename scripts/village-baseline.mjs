@@ -1,5 +1,12 @@
 import { createHash } from 'node:crypto';
 
+export function matchesAuditedBaseline(snapshot, baseline, apiFixture = false) {
+  // Local rehearsals seed decoded API rows. Remote DDL must match the separately
+  // audited raw SQL fingerprint, including NULL versus empty-array distinctions.
+  const expected = apiFixture ? baseline.fingerprint : baseline.databaseFingerprint;
+  return typeof expected === 'string' && fingerprint(snapshot.pins, snapshot.forms) === expected;
+}
+
 export function fingerprint(pins, forms) {
   const normalize = (rows) =>
     rows

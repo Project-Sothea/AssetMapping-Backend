@@ -4,5 +4,8 @@
   "pins": 208,
   "forms": 268,
   "blankPins": 13,
-  "fingerprint": "b899e75e6ec1b4b96fb557d45461b2353a150ff10f8e09ed141414f177219b68"
+  "fingerprint": "b899e75e6ec1b4b96fb557d45461b2353a150ff10f8e09ed141414f177219b68",
+  "databaseFingerprint": "e4b0a3d3cd9bb7b316f69abcfba69a5186921e06bf89f64332e986ad60edf968",
+  "databaseAuditedAt": "2026-11-18T03:15:58.743Z",
+  "databaseAuditDeployment": "80d21412-3667-4901-a5bd-bf190008d2c4"
 }

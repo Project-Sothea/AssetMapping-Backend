@@ -4,7 +4,7 @@ import { resolve, join } from 'node:path';
 
 import postgres from 'postgres';
 
-import { fingerprint } from './village-baseline.mjs';
+import { matchesAuditedBaseline } from './village-baseline.mjs';
 
 if (process.argv[2] !== '--confirmed-test-target' || !process.env.DATABASE_URL) {
   throw new Error('Explicit test DATABASE_URL and --confirmed-test-target are required.');
@@ -57,7 +57,7 @@ try {
       snapshot.pins.length !== baseline.pins ||
       snapshot.forms.length !== baseline.forms ||
       blankPins !== baseline.blankPins ||
-      fingerprint(snapshot.pins, snapshot.forms) !== baseline.fingerprint
+      !matchesAuditedBaseline(snapshot, baseline, local)
     ) {
       throw new Error(
         'Dataset differs from the audited 208-pin/268-form/13-blank baseline. Review it before migration.'
