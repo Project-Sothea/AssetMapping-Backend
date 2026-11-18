@@ -40,4 +40,5 @@ EAS production environment already points to `https://assetmapping-backend.up.ra
 
 - Backend: build, Node regression tests, lint; local snapshot restore/failure/retry/FK tests; original production restore rehearsal.
 - Frontend: 19 suites / 125 tests, TypeScript and lint before release changes; standalone EAS archive install, tests, types and iOS export after packaging change.
-- Initial production deployment, automatic main deployment and iOS build IDs: pending completion below.
+- Initial production deployment: **`2d6697de-d09d-443b-9d80-af7174a0fa40`**, SUCCESS, source commit `59d1b1f`. The guarded predeploy verified the full database hash and empty isolated Redis database. At 06:24:37 UTC, health returned 200, every API pin/form matched test, the new SQL snapshot hash matched the source and the original SQL snapshot remained unchanged. Ordinary `npm run migrate` predeploy was restored before the main push.
+- Main deployment and iOS build identifiers are recorded in the frontend production-release record after completion.
